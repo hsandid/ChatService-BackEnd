@@ -1,17 +1,15 @@
 ﻿using Aub.Eece503e.ChatService.Datacontracts;
+using Aub.Eece503e.ChatService.Web.Store.Exceptions;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Aub.Eece503e.ChatService.Web.Store.Azure
 {
     public class AzureTableProfileStore : IProfileStore
     {
-        private const string _className = "EECE503E";// we need to think of another appropriate parition key!
+        private const string _partitionKey = "Key1";// we need to think of another appropriate parition key!
         private readonly CloudTable _table;
 
         public AzureTableProfileStore(IOptions<AzureStorageSettings> options)
@@ -25,34 +23,95 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
         {
             return new ProfileTableEntity
             {
-                PartitionKey = _className, //Inherited
+                PartitionKey = _partitionKey, //Inherited
                 RowKey = profile.Username, //Inherited
                 Firstname = profile.Firstname,
                 Lastname = profile.Lastname,
             };
         }
 
-
-
-
-        public Task AddProfile(Profile profile)
+        private async Task<ProfileTableEntity> RetrieveProfileEntity(string username)
         {
-            throw new NotImplementedException();
+            TableOperation retrieveOperation = TableOperation.Retrieve<ProfileTableEntity>(partitionKey: _partitionKey, rowkey: username);
+            TableResult tableResult = await _table.ExecuteAsync(retrieveOperation);
+            var entity = (ProfileTableEntity)tableResult.Result;
+            if (entity == null)
+            {
+                throw new ProfileNotFoundException($"Profile with username {username} was not found");
+            }
+            return entity;
+        }
+        private static Profile ToProfile(ProfileTableEntity entity)
+        {
+            return new Profile
+            {
+                Username = entity.RowKey,
+                Firstname = entity.Firstname,
+                Lastname= entity.Lastname
+            };
+        }
+        public async Task AddProfile(Profile profile)
+        {
+            ProfileTableEntity entity = ToEntity(profile);
+            var insertOperation = TableOperation.Insert(entity);
+            try
+            {
+                await _table.ExecuteAsync(insertOperation);
+            }
+            catch (StorageException e)
+            {
+                if (e.RequestInformation.HttpStatusCode == 409) // conflict
+                {
+                    throw new ProfileAlreadyExistsException($"Profile {profile.Username} already exists");
+                }
+                throw new StorageErrorException("Could not write to Azure Table", e);
+            }
         }
 
-        public Task DeleteProfile(string username)
+        public async Task DeleteProfile(string username)
         {
-            throw new NotImplementedException();
+            TableEntity entity = await RetrieveProfileEntity(username);
+            var deleteOperation = TableOperation.Delete(entity);
+            try
+            {
+                await _table.ExecuteAsync(deleteOperation);
+            }
+            catch (StorageException e)
+            {
+                throw new StorageErrorException($"Could not delete profile in storage, username = {username}", e);
+            }
         }
 
-        public Task<Profile> GetProfile()
+        public async Task<Profile> GetProfile(string username)
         {
-            throw new NotImplementedException();
+            try
+            {
+                ProfileTableEntity entity = await RetrieveProfileEntity(username);
+                return ToProfile(entity);
+            }
+            catch (StorageException e)
+            {
+                throw new StorageErrorException("Could not read from Azure Table", e);
+            }
         }
 
-        public Task UpdateProfile(Profile profile)
+        public async Task UpdateProfile(Profile profile)
         {
-            throw new NotImplementedException();
+            var entity = ToEntity(profile);
+            TableOperation updateOperation = TableOperation.InsertOrReplace(entity);
+
+            try
+            {
+                await _table.ExecuteAsync(updateOperation);
+            }
+            catch (StorageException e)
+            {
+                if (e.RequestInformation.HttpStatusCode == 412) // precondition failed
+                {
+                    throw new StorageConflictException("Optimistic concurrency failed", e);
+                }
+                throw new StorageErrorException($"Could not update profile in storage, username = {profile.Username}", e);
+            }
         }
     }
 }
