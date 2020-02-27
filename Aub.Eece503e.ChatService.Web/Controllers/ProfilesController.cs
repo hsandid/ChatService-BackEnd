@@ -95,7 +95,6 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     return BadRequest(error);
                 }
 
-                await _profileStore.GetProfile(username);
                 await _profileStore.UpdateProfile(profile);
                 return Ok(profile);
             }

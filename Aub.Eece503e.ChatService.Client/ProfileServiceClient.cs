@@ -35,7 +35,12 @@ namespace Aub.Eece503e.ChatService.Client
 
         public async Task UpdateProfile(string username, Profile profile)
         {
-            string json = JsonConvert.SerializeObject(profile);
+            var body = new UpdateProfileRequestBody
+            {
+                Firstname = profile.Firstname,
+                Lastname = profile.Lastname
+            };
+            string json = JsonConvert.SerializeObject(body);
             HttpResponseMessage responseMessage = await _httpClient.PutAsync($"api/profiles/{username}", new StringContent(json, Encoding.UTF8,
                 "application/json"));
             EnsureSuccessOrThrow(responseMessage);

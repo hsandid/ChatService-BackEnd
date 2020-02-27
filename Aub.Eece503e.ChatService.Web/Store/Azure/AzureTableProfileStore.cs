@@ -106,22 +106,30 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
 
         public async Task UpdateProfile(Profile profile)
         {
-            var entity = ToEntity(profile);
-            TableOperation updateOperation = TableOperation.InsertOrReplace(entity);
+           
+            TableEntity entity = await RetrieveProfileEntity(profile.Username);
+            if (entity != null)
+            {
+                var newProfile = ToEntity(profile);
+                newProfile.ETag = "*";
 
-            try
-            {
-                await _table.ExecuteAsync(updateOperation);
-            }
-            catch (StorageException e)
-            {
-                if (e.RequestInformation.HttpStatusCode == 412) // precondition failed
+                TableOperation updateOperation = TableOperation.Merge(newProfile);
+                try
                 {
-                    throw new StorageConflictException("Optimistic concurrency failed", e);
+                    await _table.ExecuteAsync(updateOperation);
                 }
 
-                throw new StorageErrorException($"Could not update profile in storage, username = {profile.Username}", e);
+                catch (StorageException e)
+                {
+                    if (e.RequestInformation.HttpStatusCode == 412) // precondition failed
+                    {
+                        throw new StorageConflictException("Optimistic concurrency failed", e);
+                    }
+
+                    throw new StorageErrorException($"Could not update profile in storage, username = {profile.Username}", e);
+                }
             }
+            
         }
     }
 }
