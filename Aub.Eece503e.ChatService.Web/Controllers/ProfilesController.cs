@@ -19,8 +19,6 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         {
             _profileStore = profileStore;
             _logger = logger;
-
-            //If uncommented, this will throw an exception since there is no Profiles table in azure to connect to yet!!!
         }
 
         [HttpGet("{username}")]
@@ -31,8 +29,9 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 Profile profile = await _profileStore.GetProfile(username);
                 return Ok(profile);
             }
-            catch (ProfileNotFoundException)
+            catch (ProfileNotFoundException e)
             {
+                _logger.LogError(e, $"Profile {username} already exists in storage");
                 return NotFound($"The profile with username {username} was not found");
             }
             catch (StorageErrorException e)
@@ -60,10 +59,11 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             try
             {
                 await _profileStore.AddProfile(profile);
-                return Created(profile.Username,profile);
+                return CreatedAtAction(nameof(Get), new { username =profile.Username },profile);
             }
-            catch (ProfileAlreadyExistsException)
+            catch (ProfileAlreadyExistsException e)
             {
+                _logger.LogError(e, $"Profile {profile.Username} already exists in storage");
                 return Conflict($"Profile {profile.Username} already exists");
             }
             catch (StorageErrorException e)
@@ -95,10 +95,21 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     return BadRequest(error);
                 }
 
+                await _profileStore.GetProfile(username);
                 await _profileStore.UpdateProfile(profile);
-                return Ok();
+                return Ok(profile);
+            }
+            catch (ProfileNotFoundException e)
+            {
+                _logger.LogError(e, $"Profile {username} does not exists in storage");
+                return NotFound($"The profile with username {username} was not found");
             }
             catch (StorageErrorException e)
+            {
+                _logger.LogError(e, $"Failed to update profile {username} in storage");
+                return StatusCode(503, "The service is unavailable, please retry in few minutes");
+            }
+            catch(StorageConflictException e)
             {
                 _logger.LogError(e, $"Failed to update profile {username} in storage");
                 return StatusCode(503, "The service is unavailable, please retry in few minutes");
@@ -115,15 +126,16 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         {
             if (string.IsNullOrWhiteSpace(username))
             {
-                return BadRequest("The username must not be empty");
+                return BadRequest("The username must not be empty or null");
             }
             try
             {
                 await _profileStore.DeleteProfile(username);
-                return Ok();
+                return Ok(username);
             }
-            catch (ProfileNotFoundException)
+            catch (ProfileNotFoundException e)
             {
+                _logger.LogError(e, $"Profile {username} does not exists in storage");
                 return NotFound($"The profile with username {username} was not found");
             }
             catch (StorageErrorException e)

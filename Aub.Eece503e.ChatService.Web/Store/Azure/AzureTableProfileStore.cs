@@ -9,7 +9,6 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
 {
     public class AzureTableProfileStore : IProfileStore
     {
-        private const string _partitionKey = "Key1";// we need to think of another appropriate parition key!
         private readonly CloudTable _table;
 
         public AzureTableProfileStore(IOptions<AzureStorageSettings> options)
@@ -23,8 +22,8 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
         {
             return new ProfileTableEntity
             {
-                PartitionKey = _partitionKey, //Inherited
-                RowKey = profile.Username, //Inherited
+                PartitionKey = profile.Username.Substring(0,1), 
+                RowKey = profile.Username, 
                 Firstname = profile.Firstname,
                 Lastname = profile.Lastname,
             };
@@ -32,7 +31,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
 
         private async Task<ProfileTableEntity> RetrieveProfileEntity(string username)
         {
-            TableOperation retrieveOperation = TableOperation.Retrieve<ProfileTableEntity>(partitionKey: _partitionKey, rowkey: username);
+            TableOperation retrieveOperation = TableOperation.Retrieve<ProfileTableEntity>(partitionKey: username.Substring(0,1), rowkey: username);
             TableResult tableResult = await _table.ExecuteAsync(retrieveOperation);
             var entity = (ProfileTableEntity)tableResult.Result;
             if (entity == null)
@@ -78,6 +77,11 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
             }
             catch (StorageException e)
             {
+                if (e.RequestInformation.HttpStatusCode == 404) // not found
+                {
+                    throw new ProfileNotFoundException($"Profile {username} not found");
+                }
+
                 throw new StorageErrorException($"Could not delete profile in storage, username = {username}", e);
             }
         }
@@ -91,6 +95,11 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
             }
             catch (StorageException e)
             {
+                if (e.RequestInformation.HttpStatusCode == 404) // not found
+                {
+                    throw new ProfileNotFoundException($"Profile {username} not found");
+                }
+
                 throw new StorageErrorException("Could not read from Azure Table", e);
             }
         }
@@ -110,6 +119,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
                 {
                     throw new StorageConflictException("Optimistic concurrency failed", e);
                 }
+
                 throw new StorageErrorException($"Could not update profile in storage, username = {profile.Username}", e);
             }
         }

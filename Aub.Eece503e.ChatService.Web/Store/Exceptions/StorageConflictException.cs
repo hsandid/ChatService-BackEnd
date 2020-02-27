@@ -7,6 +7,9 @@ namespace Aub.Eece503e.ChatService.Web.Store.Exceptions
 {
     public class StorageConflictException : Exception
     {
+        public StorageConflictException()
+        {
+        }
         public StorageConflictException(string message, Exception innerException) : base(message, innerException)
         {
         }
