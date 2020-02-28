@@ -3,7 +3,6 @@ using Aub.Eece503e.ChatService.Web.Store.Exceptions;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
-using System;
 using System.Threading.Tasks;
 
 namespace Aub.Eece503e.ChatService.Web.Store.Azure
@@ -15,7 +14,6 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
         public AzureTableProfileStore(IOptions<AzureStorageSettings> options)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(options.Value.ConnectionString);
-            //CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureStorageSettings:ConnectionString"));
             var tableClient = storageAccount.CreateCloudTableClient();
             _table = tableClient.GetTableReference(options.Value.ProfilesTableName);
         }

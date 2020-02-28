@@ -1,11 +1,6 @@
 ﻿using Aub.Eece503e.ChatService.Client;
 using Aub.Eece503e.ChatService.Web;
 using Microsoft.AspNetCore.TestHost;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace Aub.Eece503e.ChatService.IntegrationTests
 {

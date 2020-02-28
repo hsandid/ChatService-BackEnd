@@ -25,6 +25,7 @@ namespace Aub.Eece503e.ChatService.Web
             
             services.AddOptions();
             services.Configure<AzureStorageSettings>(Configuration.GetSection("AzureStorageSettings"));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
