@@ -13,7 +13,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
     {
         public IntegrationTestFixture()
         {
-            using (var file = File.OpenText("Properties\\launchSettings.json"))
+            using (var file = File.OpenText("Properties/launchSettings.json"))
             {
                 var reader = new JsonTextReader(file);
                 var jObject = JObject.Load(reader);
