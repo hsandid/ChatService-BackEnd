@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Aub.Eece503e.ChatService.Datacontracts;
-using System.Collections.Generic;
 
 namespace Aub.Eece503e.ChatService.Client
 {
