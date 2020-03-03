@@ -4,5 +4,6 @@
     {
         public string ConnectionString { get; set; }
         public string ProfilesTableName { get; set; }
+        public string ImagesTableName { get; set; }
     }
 }
