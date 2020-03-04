@@ -31,7 +31,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             }
             catch (ProfileNotFoundException e)
             {
-                _logger.LogError(e, $"Profile {username} already exists in storage");
+                _logger.LogError(e, $"Profile {username} not found");
                 return NotFound($"The profile with username {username} was not found");
             }
             catch (StorageErrorException e)
@@ -89,7 +89,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     Firstname = updateProfileRequestBody.Firstname,
                     Lastname = updateProfileRequestBody.Lastname
                 };
-
+C:\Users\user\Desktop\ChatService\Aub.Eece503e.ChatService.Web\Controllers\ProfilesController.cs
                 if (!ValidateProfile(profile, out string error))
                 {
                     return BadRequest(error);

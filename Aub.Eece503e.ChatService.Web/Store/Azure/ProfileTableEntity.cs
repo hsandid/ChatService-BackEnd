@@ -10,6 +10,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
 
         public string Firstname { get; set; }
         public string Lastname { get; set; }
+        public string ProfilePictureID { get; set; }
     }
 }
 
