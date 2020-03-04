@@ -89,7 +89,6 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     Firstname = updateProfileRequestBody.Firstname,
                     Lastname = updateProfileRequestBody.Lastname
                 };
-C:\Users\user\Desktop\ChatService\Aub.Eece503e.ChatService.Web\Controllers\ProfilesController.cs
                 if (!ValidateProfile(profile, out string error))
                 {
                     return BadRequest(error);
