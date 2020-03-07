@@ -9,14 +9,14 @@ using Xunit;
 
 namespace Aub.Eece503e.ChatService.IntegrationTests
 {
-    public class ProfilesControllerIntegrationTests : IClassFixture<IntegrationTestFixture>, IAsyncLifetime 
+    public class ProfilesControllerIntegrationTests : IClassFixture<ProfileIntegrationTestFixture>, IAsyncLifetime 
     {
         private readonly IProfileServiceClient _profileServiceClient;
         private readonly Random _rand = new Random();
 
         private readonly ConcurrentBag<Profile> _profilesToCleanup = new ConcurrentBag<Profile>();
 
-        public ProfilesControllerIntegrationTests(IntegrationTestFixture fixture)
+        public ProfilesControllerIntegrationTests(ProfileIntegrationTestFixture fixture)
         {
             _profileServiceClient = fixture.ProfileServiceClient;
         }
@@ -39,10 +39,22 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         }
 
         [Fact]
-        public async Task PostGetProfile()
+        public async Task PostGetProfileWithImageId()
         {
 
             var profile = CreateRandomProfile();
+            await AddProfile(profile);
+
+            var fetchedProfile = await _profileServiceClient.GetProfile(profile.Username);
+            Assert.Equal(profile, fetchedProfile);
+        }
+
+        [Fact]
+        public async Task PostGetProfileWithoutImageId()
+        {
+
+            var profile = CreateRandomProfile();
+            profile.ProfilePictureId = Guid.NewGuid().ToString();
             await AddProfile(profile);
 
             var fetchedProfile = await _profileServiceClient.GetProfile(profile.Username);

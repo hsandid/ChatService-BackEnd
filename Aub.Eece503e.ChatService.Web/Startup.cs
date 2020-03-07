@@ -22,7 +22,8 @@ namespace Aub.Eece503e.ChatService.Web
         {
             services.AddControllers();
             services.AddSingleton<IProfileStore, AzureTableProfileStore>();
-            
+            services.AddSingleton<IImageStore, AzureBlobContainerImageStore>();
+
             services.AddOptions();
             services.Configure<AzureStorageSettings>(Configuration.GetSection("AzureStorageSettings"));
 

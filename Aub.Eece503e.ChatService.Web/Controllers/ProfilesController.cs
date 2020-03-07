@@ -87,7 +87,8 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 {
                     Username = username,
                     Firstname = updateProfileRequestBody.Firstname,
-                    Lastname = updateProfileRequestBody.Lastname
+                    Lastname = updateProfileRequestBody.Lastname,
+                    ProfilePictureId = updateProfileRequestBody.ProfilePictureId
                 };
 
                 if (!ValidateProfile(profile, out string error))
