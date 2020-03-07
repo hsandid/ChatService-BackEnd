@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Aub.Eece503e.ChatService.Datacontracts;
 
 namespace Aub.Eece503e.ChatService.Web.Store
 {
     public interface IImageStore
     {
-        Task<string> Upload(byte[] array);
-        Task<byte[]> Download(string imageID);
-        Task Delete(string imageID);
+        Task<string> Upload(byte[] imageData);
+        Task<byte[]> Download(string imageId);
+        Task Delete(string imageId);
     }
 }

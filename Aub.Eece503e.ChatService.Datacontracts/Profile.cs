@@ -7,7 +7,9 @@ namespace Aub.Eece503e.ChatService.Datacontracts
         public string Username { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
-        public string ProfilePictureID { get; set; } 
+        public string ProfilePictureId { get; set; }
+        
+
 
         public override bool Equals(object obj)
         {
@@ -15,7 +17,16 @@ namespace Aub.Eece503e.ChatService.Datacontracts
                    Username == profile.Username &&
                    Firstname == profile.Firstname &&
                    Lastname == profile.Lastname &&
-                   ProfilePictureID == profile.ProfilePictureID;
+                   ProfilePictureId == profile.ProfilePictureId;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -256925990;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Username);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Firstname);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Lastname);
+            return hashCode;
         }
 
     }

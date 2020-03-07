@@ -26,7 +26,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
                 RowKey = profile.Username, 
                 Firstname = profile.Firstname,
                 Lastname = profile.Lastname,
-                ProfilePictureID = profile.ProfilePictureID
+                ProfilePictureId = profile.ProfilePictureId
             };
         }
 
@@ -48,7 +48,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
                 Username = entity.RowKey,
                 Firstname = entity.Firstname,
                 Lastname= entity.Lastname,
-                ProfilePictureID = entity.ProfilePictureID
+                ProfilePictureId = entity.ProfilePictureId
             };
         }
         public async Task AddProfile(Profile profile)
