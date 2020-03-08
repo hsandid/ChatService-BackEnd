@@ -32,7 +32,7 @@ namespace Aub.Eece503e.ChatService.Tests
         public async Task UploadImageReturns503WhenStorageIsDown()
         {
             var stream = new MemoryStream(_testImageDowload.ImageData);
-            IFormFile file = new FormFile(stream, 0, _testImageDowload.ImageData.Length, "name", "fileName");
+            IFormFile file = new FormFile(stream, 0, _testImageDowload.ImageData.Length, "file", "fileName");
             var imageStoreMock = new Mock<IImageStore>();
             
             imageStoreMock.Setup(store => store.Upload(_testImageDowload.ImageData)).ThrowsAsync(new StorageErrorException());
@@ -49,7 +49,7 @@ namespace Aub.Eece503e.ChatService.Tests
         public async Task UploadImageReturns500WhenExceptionIsNotKnown()
         {
             var stream = new MemoryStream(_testImageDowload.ImageData);
-            IFormFile file = new FormFile(stream, 0, _testImageDowload.ImageData.Length, "name", "fileName");
+            IFormFile file = new FormFile(stream, 0, _testImageDowload.ImageData.Length, "file", "fileName");
             var imageStoreMock = new Mock<IImageStore>();
             imageStoreMock.Setup(store => store.Upload(_testImageDowload.ImageData)).ThrowsAsync(new Exception("Test Exception"));
             
