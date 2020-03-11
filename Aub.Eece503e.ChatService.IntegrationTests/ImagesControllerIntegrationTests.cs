@@ -45,18 +45,21 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task PostGetImage()
         {
 
-            var downloadImageResponsePost = GenerateDownloadImageResponseEntity();
-            var uploadImageResponsePost = await Upload(downloadImageResponsePost);
+            var dataStream = GenerateDataStream();
+            var uploadImageResponsePost = await Upload(dataStream);
 
             var downloadImageResponseGet = await _imageServiceClient.DownloadImage(uploadImageResponsePost.ImageId);
-            Assert.Equal(downloadImageResponsePost,downloadImageResponseGet);
+            Assert.Equal(dataStream.ToArray(),downloadImageResponseGet.ImageData);
         }
 
 
         [Fact]
         public async Task GetNonExistingImage()
         {
-            var uploadImageResponseGet = GenerateUploadImageResponseEntity();
+            var uploadImageResponseGet = new UploadImageResponse 
+            { 
+                ImageId = GenerateRandomID() 
+            };
             var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DownloadImage(uploadImageResponseGet.ImageId));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
@@ -65,18 +68,16 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [Fact]
         public async Task AddInvalidImage()
         {
-            var downloadImageResponsePost = GenerateDownloadImageResponseEntity();
-            downloadImageResponsePost.ImageData = new byte[0];
-            var e = await Assert.ThrowsAsync<ImageServiceException>(() => Upload(downloadImageResponsePost));
+            var byteArray = new byte[0];
+            var e = await Assert.ThrowsAsync<ImageServiceException>(() => Upload(new MemoryStream(byteArray)));
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
 
         [Fact]
         public async Task PostDeleteImage()
         {
-            var downloadImageResponsePost = GenerateDownloadImageResponseEntity();
-            var stream = new MemoryStream(downloadImageResponsePost.ImageData);
-            var uploadImageResponsePost = await _imageServiceClient.UploadImage(stream);
+            var dataStream = GenerateDataStream();
+            var uploadImageResponsePost = await _imageServiceClient.UploadImage(dataStream);
 
             await _imageServiceClient.DeleteImage(uploadImageResponsePost.ImageId);
 
@@ -87,39 +88,28 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [Fact]
         public async Task DeleteNonExistingImage()
         {
-            var uploadImageResponseRandom = GenerateUploadImageResponseEntity();
-            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DeleteImage(uploadImageResponseRandom.ImageId));
+            var uploadImageResponse = new UploadImageResponse
+            {
+                ImageId = GenerateRandomID()
+            };
+            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DeleteImage(uploadImageResponse.ImageId));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
-        private static string CreateRandomString()
+        private static string GenerateRandomID()
         {
-            return Guid.NewGuid().ToString();
+            string imageId = Guid.NewGuid().ToString();
+            return imageId;
+        }
+        private MemoryStream GenerateDataStream()
+        {
+            byte[] dataStream = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString());
+            return new MemoryStream(dataStream);
         }
 
-        private UploadImageResponse GenerateUploadImageResponseEntity()
+        private async Task<UploadImageResponse> Upload(MemoryStream dataStream)
         {
-            string imageId = CreateRandomString();
-            var uploadImage = new UploadImageResponse
-            {
-                ImageId = imageId
-            };
-            return uploadImage;
-        }
-        private DownloadImageResponse GenerateDownloadImageResponseEntity()
-        {
-            byte[] imageData = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString());
-            var downloadImage = new DownloadImageResponse
-            {
-                ImageData  = imageData
-            };
-            return downloadImage;
-        }
-
-        private async Task<UploadImageResponse> Upload(DownloadImageResponse downloadImageResponsePost)
-        {
-            var stream = new MemoryStream(downloadImageResponsePost.ImageData);
-            UploadImageResponse uploadImageResponsePost = await _imageServiceClient.UploadImage(stream);
+            UploadImageResponse uploadImageResponsePost = await _imageServiceClient.UploadImage(dataStream);
             _imagesToCleanup.Add(uploadImageResponsePost);
             return uploadImageResponsePost;
         }

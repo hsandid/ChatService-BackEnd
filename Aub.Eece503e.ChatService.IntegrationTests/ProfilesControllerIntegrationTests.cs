@@ -11,14 +11,14 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 {
     public class ProfilesControllerIntegrationTests : IClassFixture<ProfileIntegrationTestFixture>, IAsyncLifetime 
     {
-        private readonly IChatServiceClient _profileServiceClient;
+        private readonly IChatServiceClient _chatServiceClient;
         private readonly Random _rand = new Random();
 
         private readonly ConcurrentBag<Profile> _profilesToCleanup = new ConcurrentBag<Profile>();
 
         public ProfilesControllerIntegrationTests(ProfileIntegrationTestFixture fixture)
         {
-            _profileServiceClient = fixture.ProfileServiceClient;
+            _chatServiceClient = fixture.ProfileServiceClient;
         }
 
         public Task InitializeAsync()
@@ -31,7 +31,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             var tasks = new List<Task>();
             foreach (var profile in _profilesToCleanup)
             {
-                var task = _profileServiceClient.DeleteProfile(profile.Username);
+                var task = _chatServiceClient.DeleteProfile(profile.Username);
                 tasks.Add(task);
             }
 
@@ -45,7 +45,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             var profile = CreateRandomProfile();
             await AddProfile(profile);
 
-            var fetchedProfile = await _profileServiceClient.GetProfile(profile.Username);
+            var fetchedProfile = await _chatServiceClient.GetProfile(profile.Username);
             Assert.Equal(profile, fetchedProfile);
         }
 
@@ -57,7 +57,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             profile.ProfilePictureId = Guid.NewGuid().ToString();
             await AddProfile(profile);
 
-            var fetchedProfile = await _profileServiceClient.GetProfile(profile.Username);
+            var fetchedProfile = await _chatServiceClient.GetProfile(profile.Username);
             Assert.Equal(profile, fetchedProfile);
         }
 
@@ -76,7 +76,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
                 Firstname = firstname,
                 Lastname = lastname
             };
-            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _profileServiceClient.AddProfile(profile));
+            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _chatServiceClient.AddProfile(profile));
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
 
@@ -84,7 +84,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task GetNonExistingProfile()
         {
             string randomUsername = CreateRandomString();
-            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _profileServiceClient.GetProfile(randomUsername));
+            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _chatServiceClient.GetProfile(randomUsername));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
@@ -100,7 +100,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
         private async Task AddProfile(Profile profile)
         {
-            await _profileServiceClient.AddProfile(profile);
+            await _chatServiceClient.AddProfile(profile);
             _profilesToCleanup.Add(profile);
         }
 
@@ -112,8 +112,8 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
             profile.Firstname = CreateRandomString();
             profile.Lastname = CreateRandomString();
-            await _profileServiceClient.UpdateProfile(profile.Username,profile);
-            var fetchedProfile = await _profileServiceClient.GetProfile(profile.Username);
+            await _chatServiceClient.UpdateProfile(profile.Username,profile);
+            var fetchedProfile = await _chatServiceClient.GetProfile(profile.Username);
             Assert.Equal(profile, fetchedProfile);
         }
 
@@ -121,7 +121,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task UpdateNonExistingProfile()
         {
             var profile = CreateRandomProfile();
-            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _profileServiceClient.UpdateProfile(profile.Username, profile));
+            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _chatServiceClient.UpdateProfile(profile.Username, profile));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
@@ -138,7 +138,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             await AddProfile(profile);
             profile.Firstname = firstname;
             profile.Lastname = lastname;
-            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _profileServiceClient.UpdateProfile(profile.Username,profile));
+            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _chatServiceClient.UpdateProfile(profile.Username,profile));
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
 
@@ -146,9 +146,9 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task DeleteProfile()
         {
             var profile = CreateRandomProfile();
-            await _profileServiceClient.AddProfile(profile);
-            await _profileServiceClient.DeleteProfile(profile.Username);
-            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _profileServiceClient.GetProfile(profile.Username));
+            await _chatServiceClient.AddProfile(profile);
+            await _chatServiceClient.DeleteProfile(profile.Username);
+            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _chatServiceClient.GetProfile(profile.Username));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
@@ -156,7 +156,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task DeleteNonExistingProfile()
         {
             var profile = CreateRandomProfile();
-            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _profileServiceClient.DeleteProfile(profile.Username));
+            var e = await Assert.ThrowsAsync<ProfileServiceException>(() => _chatServiceClient.DeleteProfile(profile.Username));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
