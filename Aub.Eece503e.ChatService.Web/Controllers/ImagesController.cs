@@ -32,9 +32,9 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 await file.CopyToAsync(stream);
 
                 if (stream.Length==0)
-            {
+                {
                 return BadRequest("The image file is corrupted or empty");
-            }
+                }
                 string imageId = await _imageStore.Upload(stream.ToArray());
                 return CreatedAtAction(nameof(DownloadImage),
                 new { Id = imageId }, new UploadImageResponse
@@ -58,18 +58,12 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> DownloadImage(string id)
         {
-
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return BadRequest("The id must not be empty or null");
-            }
-
             try
             {
                 byte[] bytes = await _imageStore.Download(id);
                 return new FileContentResult(bytes, "application/octet-stream");
             }
-            catch (BlobNotFoundException e)
+            catch (ImageNotFoundException e)
             {
                 _logger.LogError(e, $"Image {id} already exists in storage");
                 return NotFound($"The Image with imageId {id} was not found");
@@ -100,14 +94,14 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 await _imageStore.Delete(id);
                 return Ok(id);
             }
-            catch (BlobNotFoundException e)
+            catch (ImageNotFoundException e)
             {
                 _logger.LogError(e, $"Image {id} already exists in storage");
                 return NotFound($"The Image with imageId {id} was not found");
             }
             catch (StorageErrorException e)
             {
-                _logger.LogError(e, $"Failed to retrieve Image {id} from storage");
+                _logger.LogWarning(e, $"Failed to retrieve Image {id} from storage");
                 return StatusCode(503, "The service is unavailable, please retry in few minutes");
             }
             catch (Exception e)

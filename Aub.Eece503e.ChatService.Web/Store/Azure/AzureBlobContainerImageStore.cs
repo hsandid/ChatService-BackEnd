@@ -18,30 +18,21 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(options.Value.ConnectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-            _blobContainer = blobClient.GetContainerReference(options.Value.BlobContainerName);
+            _blobContainer = blobClient.GetContainerReference(options.Value.ImagesBlobContainerName);
         }
 
         public async Task<string> Upload(byte[] imageData)
         {
             string str = Guid.NewGuid().ToString();
-            bool blobExists = await _blobContainer.GetBlockBlobReference(str).ExistsAsync();
-            if (blobExists)
-            {
-                throw new BlobAlreadyExistsException($"Blob with same name already exists");
-            }
-
             try
             {
+                
                 CloudBlockBlob cloudBlockBlob = _blobContainer.GetBlockBlobReference(str);
                 await cloudBlockBlob.UploadFromStreamAsync(new MemoryStream(imageData));
                 return str;
             }
             catch (StorageException e)
             {
-                if (e.RequestInformation.HttpStatusCode == 409) // conflict
-                {
-                    throw new BlobAlreadyExistsException($"Image {str} already exists");
-                }
                 throw new StorageErrorException($"Could not create image in storage, imageId = {str}", e);
             }
            
@@ -52,7 +43,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
             bool blobExists = await _blobContainer.GetBlockBlobReference(imageId).ExistsAsync();
             if (!blobExists)
             {
-                throw new BlobNotFoundException($"Image does not exists");
+                throw new ImageNotFoundException($"Image does not exists");
             }
 
             try
@@ -78,7 +69,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.Azure
             bool blobExists = await _blobContainer.GetBlockBlobReference(imageId).ExistsAsync();
             if (!blobExists)
             {
-                throw new BlobNotFoundException($"Image does not exists");
+                throw new ImageNotFoundException($"Image does not exists");
             }
 
             try

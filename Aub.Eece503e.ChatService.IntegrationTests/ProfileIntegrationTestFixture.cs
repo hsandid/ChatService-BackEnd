@@ -10,9 +10,9 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         {
             TestServer testServer = new TestServer(Program.CreateWebHostBuilder(new string[] { }));
             var httpClient = testServer.CreateClient();
-            ProfileServiceClient = new ProfileServiceClient(httpClient);
+            ProfileServiceClient = new ChatServiceClient(httpClient);
         }
 
-        public IProfileServiceClient ProfileServiceClient { get; }
+        public IChatServiceClient ProfileServiceClient { get; }
     }
 }

@@ -14,7 +14,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 {
     public class ImagesControllerIntegrationTests : IClassFixture<ImageIntegrationTestFixture>, IAsyncLifetime 
     {
-        private readonly IImageServiceClient _imageServiceClient;
+        private readonly IChatServiceClient _imageServiceClient;
         private readonly Random _rand = new Random();
 
         private readonly ConcurrentBag<UploadImageResponse> _imagesToCleanup = new ConcurrentBag<UploadImageResponse>();
@@ -41,25 +41,23 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             await Task.WhenAll(tasks);
         }
 
-
         [Fact]
         public async Task PostGetImage()
         {
 
-            var downloadImage = CreateRandomDownloadImage();
-            var uploadImage = await UploadImage(downloadImage);
+            var downloadImageResponsePost = GenerateDownloadImageResponseEntity();
+            var uploadImageResponsePost = await Upload(downloadImageResponsePost);
 
-            var downloadImageGet = await _imageServiceClient.DownloadImage(uploadImage.ImageId);
-            bool isEqual = downloadImage.Equals(downloadImageGet);
-            Assert.True(isEqual);
+            var downloadImageResponseGet = await _imageServiceClient.DownloadImage(uploadImageResponsePost.ImageId);
+            Assert.Equal(downloadImageResponsePost,downloadImageResponseGet);
         }
 
 
-            [Fact]
+        [Fact]
         public async Task GetNonExistingImage()
         {
-            var uploadImage = CreateRandomUploadImage();
-            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DownloadImage(uploadImage.ImageId));
+            var uploadImageResponseGet = GenerateUploadImageResponseEntity();
+            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DownloadImage(uploadImageResponseGet.ImageId));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
@@ -67,38 +65,31 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [Fact]
         public async Task AddInvalidImage()
         {
-            var downloadImage = CreateRandomDownloadImage();
-            downloadImage.ImageData = new byte[0];
-            var e = await Assert.ThrowsAsync<ImageServiceException>(() => UploadImage(downloadImage));
+            var downloadImageResponsePost = GenerateDownloadImageResponseEntity();
+            downloadImageResponsePost.ImageData = new byte[0];
+            var e = await Assert.ThrowsAsync<ImageServiceException>(() => Upload(downloadImageResponsePost));
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
 
         [Fact]
-        public async Task DeleteImage()
+        public async Task PostDeleteImage()
         {
-            var downloadImage = CreateRandomDownloadImage();
-            var stream = new MemoryStream(downloadImage.ImageData);
-            var uploadImage = await _imageServiceClient.UploadImage(stream);
+            var downloadImageResponsePost = GenerateDownloadImageResponseEntity();
+            var stream = new MemoryStream(downloadImageResponsePost.ImageData);
+            var uploadImageResponsePost = await _imageServiceClient.UploadImage(stream);
 
-            await _imageServiceClient.DeleteImage(uploadImage.ImageId);
+            await _imageServiceClient.DeleteImage(uploadImageResponsePost.ImageId);
 
-            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DownloadImage(uploadImage.ImageId));
+            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DownloadImage(uploadImageResponsePost.ImageId));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
         [Fact]
         public async Task DeleteNonExistingImage()
         {
-            var uploadImage = CreateRandomUploadImage();
-            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DeleteImage(uploadImage.ImageId));
+            var uploadImageResponseRandom = GenerateUploadImageResponseEntity();
+            var e = await Assert.ThrowsAsync<ImageServiceException>(() => _imageServiceClient.DeleteImage(uploadImageResponseRandom.ImageId));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
-        }
-        private async Task<UploadImageResponse> UploadImage(DownloadImageResponse downloadImage)
-        {
-            var stream = new MemoryStream(downloadImage.ImageData);
-            UploadImageResponse uploadImage = await _imageServiceClient.UploadImage(stream);
-            _imagesToCleanup.Add(uploadImage);
-            return uploadImage;
         }
 
         private static string CreateRandomString()
@@ -106,7 +97,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return Guid.NewGuid().ToString();
         }
 
-        private UploadImageResponse CreateRandomUploadImage()
+        private UploadImageResponse GenerateUploadImageResponseEntity()
         {
             string imageId = CreateRandomString();
             var uploadImage = new UploadImageResponse
@@ -115,7 +106,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             };
             return uploadImage;
         }
-        private DownloadImageResponse CreateRandomDownloadImage()
+        private DownloadImageResponse GenerateDownloadImageResponseEntity()
         {
             byte[] imageData = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString());
             var downloadImage = new DownloadImageResponse
@@ -125,6 +116,13 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return downloadImage;
         }
 
+        private async Task<UploadImageResponse> Upload(DownloadImageResponse downloadImageResponsePost)
+        {
+            var stream = new MemoryStream(downloadImageResponsePost.ImageData);
+            UploadImageResponse uploadImageResponsePost = await _imageServiceClient.UploadImage(stream);
+            _imagesToCleanup.Add(uploadImageResponsePost);
+            return uploadImageResponsePost;
+        }
 
     }
 }

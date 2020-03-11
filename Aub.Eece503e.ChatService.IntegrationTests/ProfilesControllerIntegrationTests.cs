@@ -11,7 +11,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 {
     public class ProfilesControllerIntegrationTests : IClassFixture<ProfileIntegrationTestFixture>, IAsyncLifetime 
     {
-        private readonly IProfileServiceClient _profileServiceClient;
+        private readonly IChatServiceClient _profileServiceClient;
         private readonly Random _rand = new Random();
 
         private readonly ConcurrentBag<Profile> _profilesToCleanup = new ConcurrentBag<Profile>();

@@ -5,10 +5,14 @@ using Aub.Eece503e.ChatService.Datacontracts;
 
 namespace Aub.Eece503e.ChatService.Client
 {
-    public interface IImageServiceClient
+    public interface IChatServiceClient
     {
         Task<UploadImageResponse> UploadImage(Stream stream);
         Task<DownloadImageResponse> DownloadImage(string imageId);
         Task DeleteImage(string imageId);
+        Task AddProfile(Profile profile);
+        Task<Profile> GetProfile(string username);
+        Task DeleteProfile(string username);
+        Task UpdateProfile(string username, Profile profile);
     }
 }

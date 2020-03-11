@@ -100,7 +100,7 @@ namespace Aub.Eece503e.ChatService.Tests
             IActionResult result = await controller.DeleteImage(_testImageUpload.ImageId);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
-            Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
+            Assert.Contains(LogLevel.Warning, loggerStub.LogEntries.Select(entry => entry.Level));
         }
 
         [Fact]

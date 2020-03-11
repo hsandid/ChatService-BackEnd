@@ -4,6 +4,6 @@
     {
         public string ConnectionString { get; set; }
         public string ProfilesTableName { get; set; }
-        public string BlobContainerName { get; set; }
+        public string ImagesBlobContainerName { get; set; }
     }
 }
