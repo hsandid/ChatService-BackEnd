@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Aub.Eece503e.ChatService.Client;
 using Aub.Eece503e.ChatService.IntegrationTests;
 
@@ -9,10 +9,10 @@ namespace Aub.Eece503e.ChatService.DeploymentTests
     {
             public DeploymentTestsFixture()
             {
-            string serviceUrl = Environment.GetEnvironmentVariable("StudentsServiceDeploymentTestsUrl");
+            string serviceUrl = Environment.GetEnvironmentVariable("ChatServiceDeploymentTestsUrl");
                 if (string.IsNullOrWhiteSpace(serviceUrl))
                 {
-                    throw new Exception("Could not find StudentsServiceUrl environment variable");
+                    throw new Exception("Could not find ChatServiceUrl environment variable");
                 }
 
                 ChatServiceClient = new ChatServiceClient(new System.Net.Http.HttpClient
