@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Aub.Eece503e.ChatService.Client\Aub.Eece503e.ChatService.Client.csproj" />
-    <ProjectReference Include="..\..\Aub.Eece503e.ChatService.IntegrationTests\Aub.Eece503e.ChatService.IntegrationTests.csproj" />
+    <ProjectReference Include="..\Aub.Eece503e.ChatService.Client\Aub.Eece503e.ChatService.Client.csproj" />
+    <ProjectReference Include="..\Aub.Eece503e.ChatService.IntegrationTests\Aub.Eece503e.ChatService.IntegrationTests.csproj" />
   </ItemGroup>
 </Project>

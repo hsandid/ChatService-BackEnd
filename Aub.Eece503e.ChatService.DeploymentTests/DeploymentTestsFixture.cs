@@ -9,7 +9,7 @@ namespace Aub.Eece503e.ChatService.DeploymentTests
     {
             public DeploymentTestsFixture()
             {
-                string serviceUrl = Environment.GetEnvironmentVariable("StudentsServiceDeploymentTestsUrl");
+            string serviceUrl = Environment.GetEnvironmentVariable("StudentsServiceDeploymentTestsUrl");
                 if (string.IsNullOrWhiteSpace(serviceUrl))
                 {
                     throw new Exception("Could not find StudentsServiceUrl environment variable");

@@ -12,16 +12,17 @@ using Xunit;
 
 namespace Aub.Eece503e.ChatService.IntegrationTests
 {
-    public class ImagesControllerIntegrationTests : IClassFixture<ImageIntegrationTestFixture>, IAsyncLifetime 
+    public  abstract class ImagesControllerEndToEndTests<TFixture> : IClassFixture<TFixture>, IAsyncLifetime where TFixture : class, IEndToEndTestsFixture
+
     {
         private readonly IChatServiceClient _imageServiceClient;
         private readonly Random _rand = new Random();
 
         private readonly ConcurrentBag<UploadImageResponse> _imagesToCleanup = new ConcurrentBag<UploadImageResponse>();
 
-        public ImagesControllerIntegrationTests(ImageIntegrationTestFixture fixture)
+        public ImagesControllerEndToEndTests(IEndToEndTestsFixture fixture)
         {
-            _imageServiceClient = fixture.ImageServiceClient;
+            _imageServiceClient = fixture.ChatServiceClient;
         }
 
         public Task InitializeAsync()

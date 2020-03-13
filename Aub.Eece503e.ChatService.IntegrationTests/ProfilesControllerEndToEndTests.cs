@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Aub.Eece503e.ChatService.IntegrationTests
 {
-    public class ProfilesControllerIntegrationTests : IClassFixture<ProfileIntegrationTestFixture>, IAsyncLifetime 
+    public abstract class ProfilesControllerEndToEndTests<TFixture> : IClassFixture<TFixture>, IAsyncLifetime where TFixture : class, IEndToEndTestsFixture
+
     {
         private readonly IChatServiceClient _chatServiceClient;
-        private readonly Random _rand = new Random();
 
         private readonly ConcurrentBag<Profile> _profilesToCleanup = new ConcurrentBag<Profile>();
 
-        public ProfilesControllerIntegrationTests(ProfileIntegrationTestFixture fixture)
+        public ProfilesControllerEndToEndTests(IEndToEndTestsFixture fixture)
         {
-            _chatServiceClient = fixture.ProfileServiceClient;
+            _chatServiceClient = fixture.ChatServiceClient;
         }
 
         public Task InitializeAsync()

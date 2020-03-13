@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.TestHost;
 
 namespace Aub.Eece503e.ChatService.IntegrationTests
 {
-    public class IntegrationTestsFixture
+    public class IntegrationTestsFixture: IEndToEndTestsFixture
     {
         public IntegrationTestsFixture()
         {

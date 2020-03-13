@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aub.Eece503e.ChatService.Cl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aub.Eece503e.ChatService.IntegrationTests", "..\Aub.Eece503e.ChatService.IntegrationTests\Aub.Eece503e.ChatService.IntegrationTests.csproj", "{47B21839-2856-4ECD-A51B-C5BEA8A15F25}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aub.Eece503e.ChatService.DeploymentTests", "..\Aub.Eece503e.ChatService.DeploymentTests\Aub.Eece503e.ChatService.DeploymentTests.csproj", "{AC34F766-8EFD-4013-8D77-DF396C261286}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{47B21839-2856-4ECD-A51B-C5BEA8A15F25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47B21839-2856-4ECD-A51B-C5BEA8A15F25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47B21839-2856-4ECD-A51B-C5BEA8A15F25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC34F766-8EFD-4013-8D77-DF396C261286}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC34F766-8EFD-4013-8D77-DF396C261286}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC34F766-8EFD-4013-8D77-DF396C261286}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC34F766-8EFD-4013-8D77-DF396C261286}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
