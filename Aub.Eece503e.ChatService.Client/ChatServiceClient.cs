@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Aub.Eece503e.ChatService.Datacontracts;
 
+
 namespace Aub.Eece503e.ChatService.Client
 {
     public class ChatServiceClient : IChatServiceClient
