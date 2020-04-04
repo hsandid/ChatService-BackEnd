@@ -13,6 +13,7 @@ using Aub.Eece503e.ChatService.Web.Store.Exceptions;
 using System.Text;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.ApplicationInsights;
 
 namespace Aub.Eece503e.ChatService.Tests
 {
@@ -38,7 +39,7 @@ namespace Aub.Eece503e.ChatService.Tests
             imageStoreMock.Setup(store => store.Upload(_testImageDowload.ImageData)).ThrowsAsync(new StorageErrorException());
             
             var loggerStub = new ImagesControllerLoggerStub();
-            var controller = new ImagesController(imageStoreMock.Object, loggerStub);
+            var controller = new ImagesController(imageStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.UploadImage(file);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -54,7 +55,7 @@ namespace Aub.Eece503e.ChatService.Tests
             imageStoreMock.Setup(store => store.Upload(_testImageDowload.ImageData)).ThrowsAsync(new Exception("Test Exception"));
             
             var loggerStub = new ImagesControllerLoggerStub();
-            var controller = new ImagesController(imageStoreMock.Object, loggerStub);
+            var controller = new ImagesController(imageStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.UploadImage(file);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
@@ -68,7 +69,7 @@ namespace Aub.Eece503e.ChatService.Tests
             imageStoreMock.Setup(store => store.Download(_testImageUpload.ImageId)).ThrowsAsync(new StorageErrorException());
             
             var loggerStub = new ImagesControllerLoggerStub();
-            var controller = new ImagesController(imageStoreMock.Object, loggerStub);
+            var controller = new ImagesController(imageStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.DownloadImage(_testImageUpload.ImageId);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -82,7 +83,7 @@ namespace Aub.Eece503e.ChatService.Tests
             imageStoreMock.Setup(store => store.Download(_testImageUpload.ImageId)).ThrowsAsync(new Exception("Test Exception"));
             
             var loggerStub = new ImagesControllerLoggerStub();
-            var controller = new ImagesController(imageStoreMock.Object, loggerStub);
+            var controller = new ImagesController(imageStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.DownloadImage(_testImageUpload.ImageId);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
@@ -96,7 +97,7 @@ namespace Aub.Eece503e.ChatService.Tests
             imageStoreMock.Setup(store => store.Delete(_testImageUpload.ImageId)).ThrowsAsync(new StorageErrorException());
             
             var loggerStub = new ImagesControllerLoggerStub();
-            var controller = new ImagesController(imageStoreMock.Object, loggerStub);
+            var controller = new ImagesController(imageStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.DeleteImage(_testImageUpload.ImageId);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -110,7 +111,7 @@ namespace Aub.Eece503e.ChatService.Tests
             imageStoreMock.Setup(store => store.Delete(_testImageUpload.ImageId)).ThrowsAsync(new Exception("Test Exception"));
             
             var loggerStub = new ImagesControllerLoggerStub();
-            var controller = new ImagesController(imageStoreMock.Object, loggerStub);
+            var controller = new ImagesController(imageStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.DeleteImage(_testImageUpload.ImageId);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);

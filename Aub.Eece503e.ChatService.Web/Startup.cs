@@ -21,6 +21,10 @@ namespace Aub.Eece503e.ChatService.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            string instrumentationKey = Configuration["ApplicationInsights:InstrumentationKey"];
+            services.AddApplicationInsightsTelemetry(instrumentationKey);
+
             services.AddSingleton<IProfileStore, AzureTableProfileStore>();
             services.AddSingleton<IImageStore, AzureBlobContainerImageStore>();
 
