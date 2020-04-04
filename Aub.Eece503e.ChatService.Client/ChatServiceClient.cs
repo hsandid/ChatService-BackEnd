@@ -110,7 +110,6 @@ namespace Aub.Eece503e.ChatService.Client
                 "application/json"));
             await EnsureSuccessOrThrowProfileException(responseMessage);
         }
-
         public async Task DeleteProfile(string username)
         {
             var responseMessage = await _httpClient.DeleteAsync($"api/profiles/{username}");
