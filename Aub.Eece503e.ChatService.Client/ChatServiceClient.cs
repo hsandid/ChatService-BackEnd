@@ -22,7 +22,8 @@ namespace Aub.Eece503e.ChatService.Client
         {
             if (!responseMessage.IsSuccessStatusCode)
             {
-                throw new ImageServiceException("", responseMessage.StatusCode);
+                string message = $"{responseMessage.ReasonPhrase}, {await responseMessage.Content.ReadAsStringAsync()}";
+                throw new ImageServiceException(message, responseMessage.StatusCode);
             }
         }
 
@@ -30,7 +31,8 @@ namespace Aub.Eece503e.ChatService.Client
         {
             if (!responseMessage.IsSuccessStatusCode)
             {
-                throw new ProfileServiceException("", responseMessage.StatusCode);
+                string message = $"{responseMessage.ReasonPhrase}, {await responseMessage.Content.ReadAsStringAsync()}";
+                throw new ProfileServiceException(message, responseMessage.StatusCode);
             }
         }
 
