@@ -34,7 +34,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 {
                     var stopWatch = Stopwatch.StartNew();
                     Profile profile = await _profileStore.GetProfile(username);
-                    _telemetryClient.TrackMetric("ProfileStore.GetStudent.Time", stopWatch.ElapsedMilliseconds);
+                    _telemetryClient.TrackMetric("ProfileStore.GetProfile.Time", stopWatch.ElapsedMilliseconds);
                     return Ok(profile);
                 }
                 catch (ProfileNotFoundException e)
