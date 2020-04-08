@@ -44,7 +44,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 string imageId = await _imageStore.Upload(stream.ToArray());
                 using (_logger.BeginScope("{ImageId}", imageId))
                 {
-                    _telemetryClient.TrackMetric("ImageStore.AddImage.Time", stopWatch.ElapsedMilliseconds);
+                    _telemetryClient.TrackMetric("ImageStore.Upload.Time", stopWatch.ElapsedMilliseconds);
                     _telemetryClient.TrackEvent("ImageAdded");
                     return CreatedAtAction(nameof(DownloadImage),
                     new { Id = imageId }, new UploadImageResponse
@@ -77,7 +77,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 {
                     var stopWatch = Stopwatch.StartNew();
                     byte[] bytes = await _imageStore.Download(id);
-                    _telemetryClient.TrackMetric("ImageStore.GetImage.Time", stopWatch.ElapsedMilliseconds);
+                    _telemetryClient.TrackMetric("ImageStore.Download.Time", stopWatch.ElapsedMilliseconds);
                     return new FileContentResult(bytes, "application/octet-stream");
                 }
                 catch (ImageNotFoundException e)
@@ -113,7 +113,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 {
                     var stopWatch = Stopwatch.StartNew();
                     await _imageStore.Delete(id);
-                    _telemetryClient.TrackMetric("ImageStore.DeleteImage.Time", stopWatch.ElapsedMilliseconds);
+                    _telemetryClient.TrackMetric("ImageStore.Delete.Time", stopWatch.ElapsedMilliseconds);
                     _telemetryClient.TrackEvent("ImageDeleted");
                     return Ok(id);
                 }

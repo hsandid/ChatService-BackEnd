@@ -28,7 +28,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         [HttpGet("{username}")]
         public async Task<IActionResult> Get(string username)
         {
-            using (_logger.BeginScope("{ProfileUsername}", username))
+            using (_logger.BeginScope("{Username}", username))
             {
                 try
                 {
@@ -60,7 +60,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Profile profile)
         {
-            using (_logger.BeginScope("{ProfileUsername}", profile.Username))
+            using (_logger.BeginScope("{Username}", profile.Username))
             {
                 if (!ValidateProfile(profile, out string error))
                 {
@@ -96,7 +96,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         [HttpPut("{username}")]
         public async Task<IActionResult> Put(string username, [FromBody] UpdateProfileRequestBody updateProfileRequestBody)
         {
-            using (_logger.BeginScope("{ProfileUsername}", username))
+            using (_logger.BeginScope("{Username}", username))
             {
                 try
                 {
@@ -146,7 +146,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         [HttpDelete("{username}")]
         public async Task<IActionResult> Delete(string username)
         {
-            using (_logger.BeginScope("{ProfileUsername}", username))
+            using (_logger.BeginScope("{Username}", username))
             {
                 if (string.IsNullOrWhiteSpace(username))
                 {
