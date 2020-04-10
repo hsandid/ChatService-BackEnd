@@ -4,4 +4,9 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Profile\" />
+    <Folder Include="Image\" />
+    <Folder Include="Message\" />
+  </ItemGroup>
 </Project>
