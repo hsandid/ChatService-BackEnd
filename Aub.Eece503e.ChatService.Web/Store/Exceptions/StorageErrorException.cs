@@ -14,5 +14,10 @@ namespace Aub.Eece503e.ChatService.Web.Store.Exceptions
         public StorageErrorException(string message, Exception innerException) : base(message, innerException)
         {
         }
+
+        public StorageErrorException(string message): base(message)
+        {
+        }
+
     }
 }
