@@ -12,13 +12,13 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProfilesController : ControllerBase
+    public class ProfileController : ControllerBase
     {
         private readonly IProfileStore _profileStore;
-        private readonly ILogger<ProfilesController> _logger;
+        private readonly ILogger<ProfileController> _logger;
         private readonly TelemetryClient _telemetryClient;
 
-        public ProfilesController(IProfileStore profileStore, ILogger<ProfilesController> logger, TelemetryClient telemetryClient)
+        public ProfileController(IProfileStore profileStore, ILogger<ProfileController> logger, TelemetryClient telemetryClient)
         {
             _profileStore = profileStore;
             _logger = logger;
