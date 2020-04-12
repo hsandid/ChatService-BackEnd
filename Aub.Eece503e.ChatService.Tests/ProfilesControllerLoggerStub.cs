@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Aub.Eece503e.ChatService.Tests
 {
-    public class ProfilesControllerLoggerStub : ILogger<ProfilesController>
+    public class ProfilesControllerLoggerStub : ILogger<ProfileController>
     {
         public List<LogEntry> LogEntries = new List<LogEntry>();
 

@@ -83,7 +83,7 @@ namespace Aub.Eece503e.ChatService.Client
 
         public async Task<Profile> GetProfile(string username)
         {
-            var responseMessage = await _httpClient.GetAsync($"api/profiles/{username}");
+            var responseMessage = await _httpClient.GetAsync($"api/profile/{username}");
             await EnsureSuccessOrThrowProfileException(responseMessage);
             string json = await responseMessage.Content.ReadAsStringAsync();
             var fetchedProfile = JsonConvert.DeserializeObject<Profile>(json);
@@ -93,7 +93,7 @@ namespace Aub.Eece503e.ChatService.Client
         public async Task AddProfile(Profile profile)
         {
             string json = JsonConvert.SerializeObject(profile);
-            HttpResponseMessage responseMessage = await _httpClient.PostAsync("api/profiles", new StringContent(json, Encoding.UTF8,
+            HttpResponseMessage responseMessage = await _httpClient.PostAsync("api/profile", new StringContent(json, Encoding.UTF8,
                 "application/json"));
             await EnsureSuccessOrThrowProfileException(responseMessage);
         }
@@ -106,13 +106,13 @@ namespace Aub.Eece503e.ChatService.Client
                 Lastname = profile.Lastname
             };
             string json = JsonConvert.SerializeObject(body);
-            HttpResponseMessage responseMessage = await _httpClient.PutAsync($"api/profiles/{username}", new StringContent(json, Encoding.UTF8,
+            HttpResponseMessage responseMessage = await _httpClient.PutAsync($"api/profile/{username}", new StringContent(json, Encoding.UTF8,
                 "application/json"));
             await EnsureSuccessOrThrowProfileException(responseMessage);
         }
         public async Task DeleteProfile(string username)
         {
-            var responseMessage = await _httpClient.DeleteAsync($"api/profiles/{username}");
+            var responseMessage = await _httpClient.DeleteAsync($"api/profile/{username}");
             await EnsureSuccessOrThrowProfileException(responseMessage);
         }
     }
