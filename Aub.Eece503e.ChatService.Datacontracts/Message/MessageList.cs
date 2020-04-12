@@ -2,7 +2,7 @@
 {
     public class MessageList
     {
-        public MessageWithUnixTime[] Messages { get; set; }
+        public MessageWithoutId[] Messages { get; set; }
         public string ContinuationToken { get; set; }
     }
 }

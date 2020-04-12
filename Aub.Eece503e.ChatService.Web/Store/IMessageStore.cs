@@ -4,7 +4,8 @@ namespace Aub.Eece503e.ChatService.Web.Store
 {
     public interface IMessageStore
     {
-        Task<MessageWithUnixTime> AddMessage(Message message, string conversationId);
+        Task<MessageWithUnixTime> GetMessage(string conversationId, string messageId);
+        Task AddMessage(MessageWithUnixTime message, string conversationId);
         Task<MessageList> GetMessages(string conversationId, string continuationToken, int limit);
     }
 }

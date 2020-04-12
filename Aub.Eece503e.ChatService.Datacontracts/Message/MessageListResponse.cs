@@ -2,7 +2,7 @@
 {
     public class MessageListResponse
     {
-        public MessageWithUnixTime[] Messages {get; set;}
+        public MessageWithoutId[] Messages {get; set;}
         public string NextUri { get; set; }
     }
 }
