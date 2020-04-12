@@ -10,6 +10,7 @@ using Aub.Eece503e.ChatService.Datacontracts;
 using Aub.Eece503e.ChatService.Web.Controllers;
 using Aub.Eece503e.ChatService.Web.Store;
 using Aub.Eece503e.ChatService.Web.Store.Exceptions;
+using Microsoft.ApplicationInsights;
 
 namespace Aub.Eece503e.ChatService.Tests
 {
@@ -28,7 +29,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.AddProfile(_testProfile)).ThrowsAsync(new StorageErrorException());
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Post(_testProfile);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -41,7 +42,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.AddProfile(_testProfile)).ThrowsAsync(new Exception("Test Exception"));
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Post(_testProfile);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
@@ -54,7 +55,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.GetProfile(_testProfile.Username)).ThrowsAsync(new StorageErrorException());
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Get(_testProfile.Username);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -67,7 +68,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.GetProfile(_testProfile.Username)).ThrowsAsync(new Exception("Test Exception"));
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Get(_testProfile.Username);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
@@ -80,7 +81,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.UpdateProfile(_testProfile)).ThrowsAsync(new StorageErrorException());
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Put(_testProfile.Username, new UpdateProfileRequestBody() { Firstname = _testProfile.Firstname, Lastname = _testProfile.Lastname });
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -97,7 +98,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.UpdateProfile(_testProfile)).ThrowsAsync(new Exception("Test Exception"));
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Put(_testProfile.Username, passedProfile);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
@@ -110,7 +111,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.UpdateProfile(_testProfile)).ThrowsAsync(new StorageConflictException());
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Put(_testProfile.Username, new UpdateProfileRequestBody() { Firstname = _testProfile.Firstname, Lastname = _testProfile.Lastname });
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -123,7 +124,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.DeleteProfile(_testProfile.Username)).ThrowsAsync(new StorageErrorException());
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Delete(_testProfile.Username);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
@@ -136,7 +137,7 @@ namespace Aub.Eece503e.ChatService.Tests
             var profilesStoreMock = new Mock<IProfileStore>();
             profilesStoreMock.Setup(store => store.DeleteProfile(_testProfile.Username)).ThrowsAsync(new Exception("Test Exception"));
             var loggerStub = new ProfilesControllerLoggerStub();
-            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub);
+            var controller = new ProfilesController(profilesStoreMock.Object, loggerStub, new TelemetryClient());
             IActionResult result = await controller.Delete(_testProfile.Username);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);

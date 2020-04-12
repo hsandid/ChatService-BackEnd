@@ -18,19 +18,21 @@ namespace Aub.Eece503e.ChatService.Client
             _httpClient = httpClient;
         }
 
-        private static void EnsureSuccessOrThrowImageException(HttpResponseMessage responseMessage)
+        private async Task EnsureSuccessOrThrowImageException(HttpResponseMessage responseMessage)
         {
             if (!responseMessage.IsSuccessStatusCode)
             {
-                throw new ImageServiceException("", responseMessage.StatusCode);
+                string message = $"{responseMessage.ReasonPhrase}, {await responseMessage.Content.ReadAsStringAsync()}";
+                throw new ImageServiceException(message, responseMessage.StatusCode);
             }
         }
 
-        private static void EnsureSuccessOrThrowProfileException(HttpResponseMessage responseMessage)
+        private async Task EnsureSuccessOrThrowProfileException(HttpResponseMessage responseMessage)
         {
             if (!responseMessage.IsSuccessStatusCode)
             {
-                throw new ProfileServiceException("", responseMessage.StatusCode);
+                string message = $"{responseMessage.ReasonPhrase}, {await responseMessage.Content.ReadAsStringAsync()}";
+                throw new ProfileServiceException(message, responseMessage.StatusCode);
             }
         }
 
@@ -53,7 +55,7 @@ namespace Aub.Eece503e.ChatService.Client
                 };
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request);
-                EnsureSuccessOrThrowImageException(response);
+                await EnsureSuccessOrThrowImageException(response);
                 string json = await response.Content.ReadAsStringAsync();
                 var uploadImageId = JsonConvert.DeserializeObject<UploadImageResponse>(json);
                 return uploadImageId;
@@ -64,7 +66,7 @@ namespace Aub.Eece503e.ChatService.Client
         {
             using (HttpResponseMessage response = await _httpClient.GetAsync($"api/images/{imageId}"))
             {
-                EnsureSuccessOrThrowImageException(response);
+               await EnsureSuccessOrThrowImageException(response);
                 var bytes = await response.Content.ReadAsByteArrayAsync();
                 return new DownloadImageResponse
                 {
@@ -76,13 +78,13 @@ namespace Aub.Eece503e.ChatService.Client
         public async Task DeleteImage(string imageId)
         {
             var responseMessage = await _httpClient.DeleteAsync($"api/images/{imageId}");
-            EnsureSuccessOrThrowImageException(responseMessage);
+            await EnsureSuccessOrThrowImageException(responseMessage);
         }
 
         public async Task<Profile> GetProfile(string username)
         {
             var responseMessage = await _httpClient.GetAsync($"api/profiles/{username}");
-            EnsureSuccessOrThrowProfileException(responseMessage);
+            await EnsureSuccessOrThrowProfileException(responseMessage);
             string json = await responseMessage.Content.ReadAsStringAsync();
             var fetchedProfile = JsonConvert.DeserializeObject<Profile>(json);
             return fetchedProfile;
@@ -93,7 +95,7 @@ namespace Aub.Eece503e.ChatService.Client
             string json = JsonConvert.SerializeObject(profile);
             HttpResponseMessage responseMessage = await _httpClient.PostAsync("api/profiles", new StringContent(json, Encoding.UTF8,
                 "application/json"));
-            EnsureSuccessOrThrowProfileException(responseMessage);
+            await EnsureSuccessOrThrowProfileException(responseMessage);
         }
 
         public async Task UpdateProfile(string username, Profile profile)
@@ -106,13 +108,12 @@ namespace Aub.Eece503e.ChatService.Client
             string json = JsonConvert.SerializeObject(body);
             HttpResponseMessage responseMessage = await _httpClient.PutAsync($"api/profiles/{username}", new StringContent(json, Encoding.UTF8,
                 "application/json"));
-            EnsureSuccessOrThrowProfileException(responseMessage);
+            await EnsureSuccessOrThrowProfileException(responseMessage);
         }
-
         public async Task DeleteProfile(string username)
         {
             var responseMessage = await _httpClient.DeleteAsync($"api/profiles/{username}");
-            EnsureSuccessOrThrowProfileException(responseMessage);
+            await EnsureSuccessOrThrowProfileException(responseMessage);
         }
     }
 }

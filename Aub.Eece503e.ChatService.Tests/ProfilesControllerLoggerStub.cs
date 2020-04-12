@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Aub.Eece503e.ChatService.Web.Controllers;
+using System.IO;
 
 namespace Aub.Eece503e.ChatService.Tests
 {
@@ -11,7 +12,7 @@ namespace Aub.Eece503e.ChatService.Tests
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            throw new NotImplementedException();
+            return new MemoryStream();
         }
 
         public bool IsEnabled(LogLevel logLevel)
