@@ -125,12 +125,14 @@ namespace Aub.Eece503e.ChatService.Client
             await EnsureSuccessOrThrowProfileException(responseMessage);
         }
 
-        public async Task AddMessage(string conversationId, Message message)
+        public async Task<MessageWithUnixTime> AddMessage(string conversationId, Message message)
         {
             string json = JsonConvert.SerializeObject(message);
             HttpResponseMessage responseMessage = await _httpClient.PostAsync($"api/conversations/{conversationId}/messages", new StringContent(json, Encoding.UTF8,
                 "application/json"));
             await EnsureSuccessOrThrowConversationsException(responseMessage);
+            var fetchedMessage = JsonConvert.DeserializeObject<MessageWithUnixTime>(json);
+            return fetchedMessage;
         }
         public async Task<MessageWithUnixTime> GetMessage(string conversationId, string messageId)
         {
@@ -140,9 +142,18 @@ namespace Aub.Eece503e.ChatService.Client
             var fetchedMessage = JsonConvert.DeserializeObject<MessageWithUnixTime>(json);
             return fetchedMessage;
         }
-        public async Task<MessageListResponse> GetMessageList(string conversationId, int limit)
+        public async Task<MessageListResponse> GetMessageList(string conversationId, int limit = 0)
         {
             var responseMessage = await _httpClient.GetAsync($"api/conversations/{conversationId}/messages?limit={limit}");
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedMessageList = JsonConvert.DeserializeObject<MessageListResponse>(json);
+            return fetchedMessageList;
+        }
+
+        public async Task<MessageListResponse> GetMessageList(string conversationId, string uri)
+        {
+            var responseMessage = await _httpClient.GetAsync(uri);
             await EnsureSuccessOrThrowConversationsException(responseMessage);
             string json = await responseMessage.Content.ReadAsStringAsync();
             var fetchedMessageList = JsonConvert.DeserializeObject<MessageListResponse>(json);

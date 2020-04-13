@@ -55,6 +55,19 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return message;
         }
 
+        private Message CreateRandomMessageWithText(string text)
+        {
+            string id = CreateRandomString();
+            string senderUsername = CreateRandomString();
+            var message = new Message
+            {
+                Id = id,
+                Text = text,
+                SenderUsername = senderUsername
+            };
+            return message;
+        }
+
         private Profile CreateRandomProfile()
         {
             string username = CreateRandomString();
@@ -107,7 +120,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [InlineData(4)]
         [InlineData(6)]
         [InlineData(8)]
-        public async Task PostGetMessageList(int paginationLimit)
+        public async Task PostGetMessageListAssertLimitTest(int paginationLimit)
         {
             Message[] messageArray = new Message[10];
             var conversation = CreateRandomConversation();
@@ -128,6 +141,32 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
             Assert.Equal(paginationLimit, countMessagesInFetchedList);
         }
+
+        [Fact]
+        public async Task PostGetMessageListContinuationTokenTest()
+        {
+            string conversationId = CreateRandomString();
+
+            var message1 = await _chatServiceClient.AddMessage(conversationId, CreateRandomMessage());
+            var message2 = await _chatServiceClient.AddMessage(conversationId, CreateRandomMessage());
+            var message3 = await _chatServiceClient.AddMessage(conversationId, CreateRandomMessage());
+            var message4 = await _chatServiceClient.AddMessage(conversationId, CreateRandomMessage());
+            var message5 = await _chatServiceClient.AddMessage(conversationId, CreateRandomMessage());
+
+            MessageListResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3);
+            Assert.Equal(fetchedMessageList1.Messages.ElementAt(0).Text, message5.Text);
+            Assert.Equal(fetchedMessageList1.Messages.ElementAt(1).Text, message4.Text);
+            Assert.Equal(fetchedMessageList1.Messages.ElementAt(2).Text, message3.Text);
+            Assert.Equal(fetchedMessageList1.Messages.Count(), 3);
+            Assert.NotEqual(fetchedMessageList1.NextUri, "");
+
+            MessageListResponse fetchedMessageList2 = await _chatServiceClient.GetMessageList(conversationId, fetchedMessageList1.NextUri);
+            Assert.Equal(fetchedMessageList2.Messages.ElementAt(0).Text, message2.Text);
+            Assert.Equal(fetchedMessageList2.Messages.ElementAt(1).Text, message1.Text);
+            Assert.Equal(fetchedMessageList2.Messages.Count(), 2);
+            Assert.Equal(fetchedMessageList2.NextUri, "");
+        }
+
 
         [Theory]
         [InlineData(null, "Joe", "Daniels")]

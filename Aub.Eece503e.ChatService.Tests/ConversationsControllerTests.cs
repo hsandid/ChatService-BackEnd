@@ -104,33 +104,33 @@ namespace Aub.Eece503e.ChatService.Tests
             Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
         }
 
-        //[Fact]
-        //public async Task PostMessageReturns503WhenStorageIsDown()
-        //{
-        //    var messageStoreMock = new Mock<IMessageStore>();
-        //    messageStoreMock.Setup(store => store.AddMessage(_testMessageWithUnixTime, _testConversation.Id)).ThrowsAsync(new StorageErrorException());
+        [Fact]
+        public async Task PostMessageReturns503WhenStorageIsDown()
+        {
+            var messageStoreMock = new Mock<IMessageStore>();
+            messageStoreMock.Setup(store => store.AddMessage(_testMessageWithUnixTime, _testConversation.Id)).ThrowsAsync(new StorageErrorException());
 
-        //    var loggerStub = new ConversationsControllerLoggerStub();
-        //    var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-        //    IActionResult result = await controller.PostMessage(_testConversation.Id, _testMessage);
+            var loggerStub = new ConversationsControllerLoggerStub();
+            var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
+            IActionResult result = await controller.PostMessage(_testConversation.Id, _testMessage);
 
-        //    AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
-        //    Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
-        //}
+            AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
+            Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
+        }
 
-        //[Fact]
-        //public async Task PostMessageReturns500WhenExceptionIsNotKnown()
-        //{
-        //    var messageStoreMock = new Mock<IMessageStore>();
-        //    messageStoreMock.Setup(store => store.AddMessage(_testMessageWithUnixTime, _testConversation.Id)).ThrowsAsync(new Exception("Test Exception"));
+        [Fact]
+        public async Task PostMessageReturns500WhenExceptionIsNotKnown()
+        {
+            var messageStoreMock = new Mock<IMessageStore>();
+            messageStoreMock.Setup(store => store.AddMessage(_testMessageWithUnixTime, _testConversation.Id)).ThrowsAsync(new Exception("Test Exception"));
 
-        //    var loggerStub = new ConversationsControllerLoggerStub();
-        //    var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-        //    IActionResult result = await controller.PostMessage(_testConversation.Id, _testMessage);
+            var loggerStub = new ConversationsControllerLoggerStub();
+            var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
+            IActionResult result = await controller.PostMessage(_testConversation.Id, _testMessage);
 
-        //    AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
-        //    Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
-        //}
+            AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
+            Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
+        }
     }
 
     }
