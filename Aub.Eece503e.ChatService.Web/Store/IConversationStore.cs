@@ -8,7 +8,7 @@ namespace Aub.Eece503e.ChatService.Web
     //So instead of deleting the tasks related to conversations and the classes they used, I created this seperate interface which we will most probably use next lab.
     public interface IConversationStore
     {
-        Task<CreateConverstaionResponse> CreateConversation(string usernam1, string usernam2, Message firstMessage);
+        Task<CreateConversationResponse> CreateConversation(string usernam1, string usernam2, Message firstMessage);
         Task<ConversationListResponse> GetConversations(string username, string continuationToken, int limit);
     }
 }

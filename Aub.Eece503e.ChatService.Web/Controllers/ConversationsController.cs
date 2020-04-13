@@ -67,11 +67,24 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     var stopWatch = Stopwatch.StartNew();
                     MessageList messages = await _messageStore.GetMessages(conversationId, continuationToken, limit);
                     _telemetryClient.TrackMetric("MessageStore.GetMessages.Time", stopWatch.ElapsedMilliseconds);
-                    MessageListResponse messagesResponse = new MessageListResponse
+                    MessageListResponse messagesResponse;
+                    if (string.IsNullOrWhiteSpace(messages.ContinuationToken))
                     {
-                        Messages = messages.Messages,
-                        NextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}"
-                    };
+                        messagesResponse = new MessageListResponse
+                        {
+                            Messages = messages.Messages,
+                            NextUri = ""
+                        };
+                    }
+                    else
+                    {
+                        messagesResponse = new MessageListResponse
+                        {
+                            Messages = messages.Messages,
+                            NextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}"
+                        };
+                    }
+                   
                     return Ok(messagesResponse);
                 }
                 catch (MessagesNotFoundException e)

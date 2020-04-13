@@ -8,6 +8,5 @@
     <Folder Include="Profile\" />
     <Folder Include="Image\" />
     <Folder Include="Message\" />
-    <Folder Include="Conversation\" />
   </ItemGroup>
 </Project>

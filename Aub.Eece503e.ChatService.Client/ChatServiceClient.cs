@@ -36,6 +36,15 @@ namespace Aub.Eece503e.ChatService.Client
             }
         }
 
+        private async Task EnsureSuccessOrThrowConversationsException(HttpResponseMessage responseMessage)
+        {
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                string message = $"{responseMessage.ReasonPhrase}, {await responseMessage.Content.ReadAsStringAsync()}";
+                throw new ConversationsServiceException(message, responseMessage.StatusCode);
+            }
+        }
+
         public async Task<UploadImageResponse> UploadImage(Stream stream)
         {
             HttpContent fileStreamContent = new StreamContent(stream);
@@ -114,6 +123,30 @@ namespace Aub.Eece503e.ChatService.Client
         {
             var responseMessage = await _httpClient.DeleteAsync($"api/profile/{username}");
             await EnsureSuccessOrThrowProfileException(responseMessage);
+        }
+
+        public async Task AddMessage(string conversationId, Message message)
+        {
+            string json = JsonConvert.SerializeObject(message);
+            HttpResponseMessage responseMessage = await _httpClient.PostAsync($"api/conversations/{conversationId}/messages", new StringContent(json, Encoding.UTF8,
+                "application/json"));
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+        }
+        public async Task<MessageWithUnixTime> GetMessage(string conversationId, string messageId)
+        {
+            var responseMessage = await _httpClient.GetAsync($"api/conversations/{conversationId}/messages/{messageId}");
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedMessage = JsonConvert.DeserializeObject<MessageWithUnixTime>(json);
+            return fetchedMessage;
+        }
+        public async Task<MessageListResponse> GetMessageList(string conversationId, int limit)
+        {
+            var responseMessage = await _httpClient.GetAsync($"api/conversations/{conversationId}/messages?limit={limit}");
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedMessageList = JsonConvert.DeserializeObject<MessageListResponse>(json);
+            return fetchedMessageList;
         }
     }
 }
