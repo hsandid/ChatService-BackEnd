@@ -1,8 +1,8 @@
 ﻿namespace Aub.Eece503e.ChatService.Datacontracts
 {
-    public class MessageListResponse
+    public class GetMessagesResponse
     {
-        public MessageWithoutId[] Messages {get; set;}
+        public GetMessagesResponseEntry[] Messages {get; set;}
         public string NextUri { get; set; }
     }
 }

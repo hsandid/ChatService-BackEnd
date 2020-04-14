@@ -25,7 +25,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             _options = options;
         }
 
-        public async Task AddMessage(MessageWithUnixTime message, string conversationId)
+        public async Task AddMessage(Message message, string conversationId)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
         }
 
 
-        public async Task<MessageList> GetMessages(string conversationId, string continuationToken, int limit)
+        public async Task<MessageList> GetMessages(string conversationId, string continuationToken, int limit, long lastSeenMessageTime)
         {
             try
             {
@@ -57,12 +57,13 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
                 };
 
                 IQueryable<DocumentDbMessageEntity> query = _documentClient.CreateDocumentQuery<DocumentDbMessageEntity>(DocumentCollectionUri, feedOptions)
-                    .OrderByDescending(entity => entity.UnixTime);
+                    .OrderByDescending(entity => entity.UnixTime)
+                    .Where(entity => entity.UnixTime > lastSeenMessageTime);
                 FeedResponse<DocumentDbMessageEntity> feedResponse = await query.AsDocumentQuery().ExecuteNextAsync<DocumentDbMessageEntity>();
                 return new MessageList
                 {
                     ContinuationToken = feedResponse.ResponseContinuation,
-                    Messages = feedResponse.Select(ToMessageWithoutId).ToArray()
+                    Messages = feedResponse.Select(ToMessagesResponseEntry).ToArray()
                 };
             }
             catch (DocumentClientException e)
@@ -77,14 +78,14 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             }
         }
 
-        public async Task<MessageWithUnixTime> GetMessage(string conversationId, string messageId)
+        public async Task<Message> GetMessage(string conversationId, string messageId)
         {
             try
             {
                 var entity = await _documentClient.ReadDocumentAsync<DocumentDbMessageEntity>(
                     CreateDocumentUri(messageId),
                     new RequestOptions { PartitionKey = new PartitionKey($"m_{conversationId}") });
-                return ToMessageWithUnixTime(entity);
+                return ToMessage(entity);
             }
             catch (DocumentClientException e)
             {
@@ -98,7 +99,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
         }
 
 
-        private static DocumentDbMessageEntity ToEntity(string conversationId, MessageWithUnixTime message)
+        private static DocumentDbMessageEntity ToEntity(string conversationId, Message message)
         {
             return new DocumentDbMessageEntity
             {
@@ -110,9 +111,9 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             };
         }
 
-        private static MessageWithoutId ToMessageWithoutId(DocumentDbMessageEntity entity)
+        private static GetMessagesResponseEntry ToMessagesResponseEntry(DocumentDbMessageEntity entity)
         {
-            return new MessageWithoutId
+            return new GetMessagesResponseEntry
             { 
                 Text = entity.Text,
                 SenderUsername = entity.SenderUsername,
@@ -120,9 +121,9 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             };
         }
 
-        private static MessageWithUnixTime ToMessageWithUnixTime(DocumentDbMessageEntity entity)
+        private static Message ToMessage(DocumentDbMessageEntity entity)
         {
-            return new MessageWithUnixTime
+            return new Message
             {
                 Id = entity.Id,
                 Text = entity.Text,

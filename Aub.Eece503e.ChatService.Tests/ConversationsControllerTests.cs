@@ -23,14 +23,14 @@ namespace Aub.Eece503e.ChatService.Tests
         // We have three api calls
         // Need 6 tests
 
-        private Message _testMessage = new Message
+        private PostMessageRequest _testPostMessageRequest = new PostMessageRequest
         {
             Id = "001",
             Text = "RandomMessage",
             SenderUsername = "JohnSmith"
         };
 
-        private MessageWithUnixTime _testMessageWithUnixTime = new MessageWithUnixTime
+        private Message _testMessage = new Message
         {
             Id = "001",
             Text = "RandomMessage",
@@ -47,16 +47,17 @@ namespace Aub.Eece503e.ChatService.Tests
 
         private string _testContinuationToken = "0001";
         private int _testLimit = 10;
+        private int _testLastSeenMessageTime = 10;
 
         [Fact]
         public async Task GetMessageReturns503WhenStorageIsDown()
         {
             var messageStoreMock = new Mock<IMessageStore>();
-            messageStoreMock.Setup(store => store.GetMessage(_testConversation.Id, _testMessage.Id)).ThrowsAsync(new StorageErrorException());
+            messageStoreMock.Setup(store => store.GetMessage(_testConversation.Id, _testPostMessageRequest.Id)).ThrowsAsync(new StorageErrorException());
 
             var loggerStub = new ConversationsControllerLoggerStub();
             var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.GetMessage(_testConversation.Id, _testMessage.Id);
+            IActionResult result = await controller.GetMessage(_testConversation.Id, _testPostMessageRequest.Id);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
             Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
@@ -66,11 +67,11 @@ namespace Aub.Eece503e.ChatService.Tests
         public async Task GetMessageReturns500WhenExceptionIsNotKnown()
         {
             var messageStoreMock = new Mock<IMessageStore>();
-            messageStoreMock.Setup(store => store.GetMessage(_testConversation.Id, _testMessage.Id)).ThrowsAsync(new Exception("Test Exception"));
+            messageStoreMock.Setup(store => store.GetMessage(_testConversation.Id, _testPostMessageRequest.Id)).ThrowsAsync(new Exception("Test Exception"));
 
             var loggerStub = new ConversationsControllerLoggerStub();
             var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.GetMessage(_testConversation.Id, _testMessage.Id);
+            IActionResult result = await controller.GetMessage(_testConversation.Id, _testPostMessageRequest.Id);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
             Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
@@ -80,11 +81,11 @@ namespace Aub.Eece503e.ChatService.Tests
         public async Task GetMessageListReturns503WhenStorageIsDown()
         {
             var messageStoreMock = new Mock<IMessageStore>();
-            messageStoreMock.Setup(store => store.GetMessages(_testConversation.Id, _testContinuationToken, _testLimit)).ThrowsAsync(new StorageErrorException());
+            messageStoreMock.Setup(store => store.GetMessages(_testConversation.Id, _testContinuationToken, _testLimit, _testLastSeenMessageTime)).ThrowsAsync(new StorageErrorException());
 
             var loggerStub = new ConversationsControllerLoggerStub();
             var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.GetMessageList(_testConversation.Id, _testContinuationToken, _testLimit);
+            IActionResult result = await controller.GetMessageList(_testConversation.Id, _testContinuationToken, _testLimit, _testLastSeenMessageTime);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
             Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
@@ -94,11 +95,11 @@ namespace Aub.Eece503e.ChatService.Tests
         public async Task GetMessageListReturns500WhenExceptionIsNotKnown()
         {
             var messageStoreMock = new Mock<IMessageStore>();
-            messageStoreMock.Setup(store => store.GetMessages(_testConversation.Id, _testContinuationToken, _testLimit)).ThrowsAsync(new Exception("Test Exception"));
+            messageStoreMock.Setup(store => store.GetMessages(_testConversation.Id, _testContinuationToken, _testLimit, _testLastSeenMessageTime)).ThrowsAsync(new Exception("Test Exception"));
 
             var loggerStub = new ConversationsControllerLoggerStub();
             var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.GetMessageList(_testConversation.Id, _testContinuationToken, _testLimit);
+            IActionResult result = await controller.GetMessageList(_testConversation.Id, _testContinuationToken, _testLimit, _testLastSeenMessageTime);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
             Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
@@ -108,11 +109,11 @@ namespace Aub.Eece503e.ChatService.Tests
         public async Task PostMessageReturns503WhenStorageIsDown()
         {
             var messageStoreMock = new Mock<IMessageStore>();
-            messageStoreMock.Setup(store => store.AddMessage(_testMessageWithUnixTime, _testConversation.Id)).ThrowsAsync(new StorageErrorException());
+            messageStoreMock.Setup(store => store.AddMessage(_testMessage, _testConversation.Id)).ThrowsAsync(new StorageErrorException());
 
             var loggerStub = new ConversationsControllerLoggerStub();
             var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.PostMessage(_testConversation.Id, _testMessage);
+            IActionResult result = await controller.PostMessage(_testConversation.Id, _testPostMessageRequest);
 
             AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
             Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
@@ -122,11 +123,11 @@ namespace Aub.Eece503e.ChatService.Tests
         public async Task PostMessageReturns500WhenExceptionIsNotKnown()
         {
             var messageStoreMock = new Mock<IMessageStore>();
-            messageStoreMock.Setup(store => store.AddMessage(_testMessageWithUnixTime, _testConversation.Id)).ThrowsAsync(new Exception("Test Exception"));
+            messageStoreMock.Setup(store => store.AddMessage(_testMessage, _testConversation.Id)).ThrowsAsync(new Exception("Test Exception"));
 
             var loggerStub = new ConversationsControllerLoggerStub();
             var controller = new ConversationsController(messageStoreMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.PostMessage(_testConversation.Id, _testMessage);
+            IActionResult result = await controller.PostMessage(_testConversation.Id, _testPostMessageRequest);
 
             AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
             Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));

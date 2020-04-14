@@ -2,7 +2,7 @@
 {
     public class MessageList
     {
-        public MessageWithoutId[] Messages { get; set; }
+        public GetMessagesResponseEntry[] Messages { get; set; }
         public string ContinuationToken { get; set; }
     }
 }

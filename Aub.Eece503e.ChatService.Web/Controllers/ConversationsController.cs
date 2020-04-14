@@ -30,12 +30,12 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         [HttpGet("{conversationId}/messages/{messageId}")]
         public async Task<IActionResult> GetMessage(string conversationId, string messageId)
         {
-            using (_logger.BeginScope("{Message_ID}", messageId))
+            using (_logger.BeginScope("{MessageID}", messageId))
             {
                 try
                 {
                     var stopWatch = Stopwatch.StartNew();
-                    MessageWithUnixTime message = await _messageStore.GetMessage(conversationId, messageId);
+                    Message message = await _messageStore.GetMessage(conversationId, messageId);
                     _telemetryClient.TrackMetric("MessageStore.GetMessage.Time", stopWatch.ElapsedMilliseconds);
                     return Ok(message);
                 }
@@ -58,19 +58,19 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         }
 
         [HttpGet("{conversationId}/messages")]
-        public async Task<IActionResult> GetMessageList(string conversationId, string continuationToken, int limit)
+        public async Task<IActionResult> GetMessageList(string conversationId, string continuationToken, int limit, long lastSeenMessageTime)
         {
-            using (_logger.BeginScope("{Conversation_ID}", conversationId))
+            using (_logger.BeginScope("{ConversationID}", conversationId))
             { 
                 try
                 {
                     var stopWatch = Stopwatch.StartNew();
-                    MessageList messages = await _messageStore.GetMessages(conversationId, continuationToken, limit);
+                    MessageList messages = await _messageStore.GetMessages(conversationId, continuationToken, limit, lastSeenMessageTime);
                     _telemetryClient.TrackMetric("MessageStore.GetMessages.Time", stopWatch.ElapsedMilliseconds);
-                    MessageListResponse messagesResponse;
+                    GetMessagesResponse messagesResponse;
                     if (string.IsNullOrWhiteSpace(messages.ContinuationToken))
                     {
-                        messagesResponse = new MessageListResponse
+                        messagesResponse = new GetMessagesResponse
                         {
                             Messages = messages.Messages,
                             NextUri = ""
@@ -78,10 +78,10 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     }
                     else
                     {
-                        messagesResponse = new MessageListResponse
+                        messagesResponse = new GetMessagesResponse
                         {
                             Messages = messages.Messages,
-                            NextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}"
+                            NextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenMessageTime}"
                         };
                     }
                    
@@ -107,49 +107,49 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         }
 
         [HttpPost("{conversationId}/messages")]
-        public async Task<IActionResult> PostMessage(string conversationId, [FromBody] Message message)
+        public async Task<IActionResult> PostMessage(string conversationId, [FromBody] PostMessageRequest postMessageRequest)
         {
-            using (_logger.BeginScope("{Message_ID}", message.Id))
+            using (_logger.BeginScope("{Message_ID}", postMessageRequest.Id))
             {
-                if (!ValidateMessage(message, out string error))
+                if (!ValidateMessage(postMessageRequest, out string error))
                 {
                     return BadRequest(error);
                 }
 
-                MessageWithUnixTime messageWithUnixTime = new MessageWithUnixTime
+                Message message = new Message
                 {
-                    Id = message.Id,
-                    Text = message.Text,
-                    SenderUsername = message.SenderUsername,
+                    Id = postMessageRequest.Id,
+                    Text = postMessageRequest.Text,
+                    SenderUsername = postMessageRequest.SenderUsername,
                     UnixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 };
 
                 try
                 {
                     var stopWatch = Stopwatch.StartNew();
-                    await _messageStore.AddMessage(messageWithUnixTime, conversationId);
+                    await _messageStore.AddMessage(message, conversationId);
                     _telemetryClient.TrackMetric("MessageStore.AddMessage.Time", stopWatch.ElapsedMilliseconds);
                     _telemetryClient.TrackEvent("MessageAdded");
-                    return CreatedAtAction(nameof(GetMessage), new { conversationId = conversationId, messageId = message.Id }, messageWithUnixTime);
+                    return CreatedAtAction(nameof(GetMessage), new { conversationId = conversationId, messageId = postMessageRequest.Id }, message);
                 }
                 catch (MessageAlreadyExistsException)
                 {
-                    return CreatedAtAction(nameof(GetMessage), new { conversationId = conversationId, messageId = message.Id }, messageWithUnixTime); ; //we agreed to return created if already exists.
+                    return CreatedAtAction(nameof(GetMessage), new { conversationId = conversationId, messageId = postMessageRequest.Id }, message); ; //we agreed to return created if already exists.
                 }
                 catch (StorageErrorException e)
                 {
-                    _logger.LogError(e, $"Failed add message {message.Id} to storage");
+                    _logger.LogError(e, $"Failed add message {postMessageRequest.Id} to storage");
                     return StatusCode(503, "The service is unavailable, please retry in few minutes");
                 }
                 catch (Exception e)
                 { 
-                    _logger.LogError(e, $"Unknown exception occured while adding message {message.Id} to storage");
+                    _logger.LogError(e, $"Unknown exception occured while adding message {postMessageRequest.Id} to storage");
                     return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
                 }
             }
         }
 
-        private bool ValidateMessage(Message message, out string error)
+        private bool ValidateMessage(PostMessageRequest message, out string error)
         {
             if (string.IsNullOrWhiteSpace(message.Id))
             {

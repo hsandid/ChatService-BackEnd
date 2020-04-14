@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Aub.Eece503e.ChatService.Datacontracts
 {
-    public class MessageWithoutId
+    public class GetMessagesResponseEntry
     {
         public string Text { get; set; }
         public string SenderUsername { get; set; }

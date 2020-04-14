@@ -7,6 +7,5 @@
   <ItemGroup>
     <Folder Include="Profile\" />
     <Folder Include="Image\" />
-    <Folder Include="Message\" />
   </ItemGroup>
 </Project>
