@@ -134,7 +134,8 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 }
                 catch (MessageAlreadyExistsException)
                 {
-                    return CreatedAtAction(nameof(GetMessage), new { conversationId = conversationId, messageId = postMessageRequest.Id }, message); ; //we agreed to return created if already exists.
+                    var originalMessage = await _messageStore.GetMessage(conversationId, message.Id);
+                    return CreatedAtAction(nameof(GetMessage), new { conversationId = conversationId, messageId = postMessageRequest.Id }, originalMessage); ; //we agreed to return already exisitng message if it exists.
                 }
                 catch (StorageErrorException e)
                 {
