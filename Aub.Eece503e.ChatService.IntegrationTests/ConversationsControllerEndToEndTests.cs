@@ -122,7 +122,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         {
             string conversationId = CreateRandomString();
             var lastSeenMessage = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
-            await Task.Delay(1001);//to make sure next messages have different Unix Time.
+            //await Task.Delay(1001); commented this delay after changning UnixTime from seconds to milli seconds.
             var message1 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
             var message2 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
             var message3 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());

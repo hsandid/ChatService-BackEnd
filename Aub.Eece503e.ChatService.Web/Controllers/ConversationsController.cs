@@ -121,8 +121,8 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     Id = postMessageRequest.Id,
                     Text = postMessageRequest.Text,
                     SenderUsername = postMessageRequest.SenderUsername,
-                    UnixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                };
+                    UnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            };
 
                 try
                 {
@@ -157,7 +157,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 error = "The message id must not be empty";
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(message.Text))// The client app shouldn't allow empty messages. We can allow emtpy messages on our side.
+            if (string.IsNullOrWhiteSpace(message.Text))// The client app shouldn't allow empty messages. We can choose to allow emtpy messages on our side.
             {
                 error = "The message text must not be empty";
                 return false;
