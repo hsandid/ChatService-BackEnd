@@ -149,7 +149,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [InlineData(3)]
         [InlineData(4)]
         [InlineData(5)]
-        public async Task LastSeenMessageTimeTest(int indexOfLastSentMessage)
+        public async Task PostGetMessageListLastSeenMessageTimeTest(int indexOfLastSeenMessage)
         {
             string conversationId = CreateRandomString();
             Message[] sentMessageList = new Message[6];
@@ -159,11 +159,11 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
                 sentMessageList[messageCount] = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
             }
            
-            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3, sentMessageList[indexOfLastSentMessage].UnixTime);
+            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3, sentMessageList[indexOfLastSeenMessage].UnixTime);
 
-                if(indexOfLastSentMessage >= 2)
+                if(indexOfLastSeenMessage >= 2)
                 {
-                    Assert.Equal(5 - indexOfLastSentMessage, fetchedMessageList1.Messages.Count());
+                    Assert.Equal(5 - indexOfLastSeenMessage, fetchedMessageList1.Messages.Count());
                     Assert.Empty(fetchedMessageList1.NextUri);
                 }
                 else
@@ -171,33 +171,8 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
                     Assert.Equal(3, fetchedMessageList1.Messages.Count());
                     Assert.NotEmpty(fetchedMessageList1.NextUri);
                     GetMessagesResponse fetchedMessageList2 = await _chatServiceClient.GetMessageList(conversationId, fetchedMessageList1.NextUri);
-                    Assert.Equal(2 - indexOfLastSentMessage, fetchedMessageList2.Messages.Count());
+                    Assert.Equal(2 - indexOfLastSeenMessage, fetchedMessageList2.Messages.Count());
                     Assert.Empty(fetchedMessageList2.NextUri);
-
-                    if (indexOfLastSentMessage <= 0)
-                    {
-                        Assert.Equal(fetchedMessageList2.Messages.ElementAt(1).Text, sentMessageList[1].Text);
-                    }
-
-                    if (indexOfLastSentMessage <= 1)
-                    {
-                        Assert.Equal(fetchedMessageList2.Messages.ElementAt(0).Text, sentMessageList[2].Text);
-                    }
-                }
-
-                if (indexOfLastSentMessage <= 2)
-                {
-                    Assert.Equal(fetchedMessageList1.Messages.ElementAt(2).Text, sentMessageList[3].Text);
-                }
-
-                if (indexOfLastSentMessage <= 3)
-                {
-                    Assert.Equal(fetchedMessageList1.Messages.ElementAt(1).Text, sentMessageList[4].Text);
-                }
-
-                if (indexOfLastSentMessage <= 4)
-                {
-                    Assert.Equal(fetchedMessageList1.Messages.ElementAt(0).Text, sentMessageList[5].Text);
                 }
         }
 
