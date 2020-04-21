@@ -144,36 +144,25 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
         [InlineData(2)]
-        [InlineData(3)]
         [InlineData(4)]
-        [InlineData(5)]
+        [InlineData(6)]
+        [InlineData(8)]
+        [InlineData(10)]
         public async Task PostGetMessageListLastSeenMessageTimeTest(int indexOfLastSeenMessage)
         {
             string conversationId = CreateRandomString();
-            Message[] sentMessageList = new Message[6];
+            Message[] sentMessageList = new Message[11];
 
-            for(int messageCount = 0; messageCount<6; messageCount++)
+            for(int messageCount = 0; messageCount<11; messageCount++)
             {
                 sentMessageList[messageCount] = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
             }
            
-            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3, sentMessageList[indexOfLastSeenMessage].UnixTime);
-
-                if(indexOfLastSeenMessage >= 2)
-                {
-                    Assert.Equal(5 - indexOfLastSeenMessage, fetchedMessageList1.Messages.Count());
-                    Assert.Empty(fetchedMessageList1.NextUri);
-                }
-                else
-                {
-                    Assert.Equal(3, fetchedMessageList1.Messages.Count());
-                    Assert.NotEmpty(fetchedMessageList1.NextUri);
-                    GetMessagesResponse fetchedMessageList2 = await _chatServiceClient.GetMessageList(conversationId, fetchedMessageList1.NextUri);
-                    Assert.Equal(2 - indexOfLastSeenMessage, fetchedMessageList2.Messages.Count());
-                    Assert.Empty(fetchedMessageList2.NextUri);
-                }
+            GetMessagesResponse fetchedMessageList = await _chatServiceClient.GetMessageList(conversationId, 30, sentMessageList[indexOfLastSeenMessage].UnixTime);
+            int numberOfMessagesfetched = 10 - indexOfLastSeenMessage;
+            Assert.Equal(numberOfMessagesfetched, fetchedMessageList.Messages.Count());
+            Assert.Empty(fetchedMessageList.NextUri);
         }
 
         [Theory]
