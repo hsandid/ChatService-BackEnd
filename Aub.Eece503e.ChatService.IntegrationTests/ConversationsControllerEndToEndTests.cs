@@ -76,7 +76,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             {
                 Id = id,
                 LastModifiedUnixTime = 001,
-                Recepient = CreateRandomProfile()
+                Recipient = CreateRandomProfile()
             };
             return conversation;
         }
@@ -121,28 +121,85 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task PostGetMessageListContinuationTokenTest()
         {
             string conversationId = CreateRandomString();
-            var lastSeenMessage = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
-            //await Task.Delay(1001); commented this delay after changning UnixTime from seconds to milli seconds.
-            var message1 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
-            var message2 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
-            var message3 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
-            var message4 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
-            var message5 = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
+            Message[] sentMessageList = new Message[6];
 
-            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3, lastSeenMessage.UnixTime);
-            Assert.Equal(fetchedMessageList1.Messages.ElementAt(0).Text, message5.Text);
-            Assert.Equal(fetchedMessageList1.Messages.ElementAt(1).Text, message4.Text);
-            Assert.Equal(fetchedMessageList1.Messages.ElementAt(2).Text, message3.Text);
+            for (int messageCount = 0; messageCount < 6; messageCount++)
+            {
+                sentMessageList[messageCount] = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
+            }
+
+            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3, sentMessageList[0].UnixTime);
             Assert.Equal(3, fetchedMessageList1.Messages.Count());
-            Assert.NotEqual("", fetchedMessageList1.NextUri);
+            Assert.Equal(fetchedMessageList1.Messages.ElementAt(0).Text, sentMessageList[5].Text);
+            Assert.Equal(fetchedMessageList1.Messages.ElementAt(1).Text, sentMessageList[4].Text);
+            Assert.Equal(fetchedMessageList1.Messages.ElementAt(2).Text, sentMessageList[3].Text);
+            Assert.NotEmpty(fetchedMessageList1.NextUri);
 
             GetMessagesResponse fetchedMessageList2 = await _chatServiceClient.GetMessageList(conversationId, fetchedMessageList1.NextUri);
-            Assert.Equal(fetchedMessageList2.Messages.ElementAt(0).Text, message2.Text);
-            Assert.Equal(fetchedMessageList2.Messages.ElementAt(1).Text, message1.Text);
             Assert.Equal(2, fetchedMessageList2.Messages.Count());
-            Assert.Equal("", fetchedMessageList2.NextUri);
+            Assert.Equal(fetchedMessageList2.Messages.ElementAt(0).Text, sentMessageList[2].Text);
+            Assert.Equal(fetchedMessageList2.Messages.ElementAt(1).Text, sentMessageList[1].Text);
+            Assert.Empty(fetchedMessageList2.NextUri);
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        public async Task LastSeenMessageTimeTest(int indexOfLastSentMessage)
+        {
+            string conversationId = CreateRandomString();
+            Message[] sentMessageList = new Message[6];
+
+            for(int messageCount = 0; messageCount<6; messageCount++)
+            {
+                sentMessageList[messageCount] = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
+            }
+           
+            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3, sentMessageList[indexOfLastSentMessage].UnixTime);
+
+                if(indexOfLastSentMessage >= 2)
+                {
+                    Assert.Equal(5 - indexOfLastSentMessage, fetchedMessageList1.Messages.Count());
+                    Assert.Empty(fetchedMessageList1.NextUri);
+                }
+                else
+                {
+                    Assert.Equal(3, fetchedMessageList1.Messages.Count());
+                    Assert.NotEmpty(fetchedMessageList1.NextUri);
+                    GetMessagesResponse fetchedMessageList2 = await _chatServiceClient.GetMessageList(conversationId, fetchedMessageList1.NextUri);
+                    Assert.Equal(2 - indexOfLastSentMessage, fetchedMessageList2.Messages.Count());
+                    Assert.Empty(fetchedMessageList2.NextUri);
+
+                    if (indexOfLastSentMessage <= 0)
+                    {
+                        Assert.Equal(fetchedMessageList2.Messages.ElementAt(1).Text, sentMessageList[1].Text);
+                    }
+
+                    if (indexOfLastSentMessage <= 1)
+                    {
+                        Assert.Equal(fetchedMessageList2.Messages.ElementAt(0).Text, sentMessageList[2].Text);
+                    }
+                }
+
+                if (indexOfLastSentMessage <= 2)
+                {
+                    Assert.Equal(fetchedMessageList1.Messages.ElementAt(2).Text, sentMessageList[3].Text);
+                }
+
+                if (indexOfLastSentMessage <= 3)
+                {
+                    Assert.Equal(fetchedMessageList1.Messages.ElementAt(1).Text, sentMessageList[4].Text);
+                }
+
+                if (indexOfLastSentMessage <= 4)
+                {
+                    Assert.Equal(fetchedMessageList1.Messages.ElementAt(0).Text, sentMessageList[5].Text);
+                }
+        }
 
         [Theory]
         [InlineData(null, "Joe", "Daniels")]

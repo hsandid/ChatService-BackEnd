@@ -42,7 +42,7 @@ namespace Aub.Eece503e.ChatService.Tests
         {
             Id = "001",
             LastModifiedUnixTime = 000001,
-            Recepient = new Profile { Username = "Joe", Firstname = "Bryan", Lastname = "Davis" , ProfilePictureId = "002" }
+            Recipient = new Profile { Username = "Joe", Firstname = "Bryan", Lastname = "Davis" , ProfilePictureId = "002" }
         };
 
         private string _testContinuationToken = "0001";
