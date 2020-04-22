@@ -70,7 +70,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             {
                 if ((int)e.StatusCode == 404)
                 {
-                    throw new MessagesNotFoundException($"ConversationId {conversationId} was not found in storage");
+                    throw new ConversationNotFoundException($"ConversationId {conversationId} was not found in storage");
                 }
 
 

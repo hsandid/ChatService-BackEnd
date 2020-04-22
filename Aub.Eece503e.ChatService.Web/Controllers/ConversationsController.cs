@@ -16,14 +16,110 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
     public class ConversationsController : ControllerBase
     {
         private readonly IMessageStore _messageStore;
+        private readonly IConversationStore _conversationStore;
         private readonly ILogger<ConversationsController> _logger;
         private readonly TelemetryClient _telemetryClient;
 
-        public ConversationsController(IMessageStore messageStore, ILogger<ConversationsController> logger, TelemetryClient telemetryClient)
+        public ConversationsController(IMessageStore messageStore, IConversationStore conversationStore, ILogger<ConversationsController> logger, TelemetryClient telemetryClient)
         {
             _messageStore = messageStore;
+            _conversationStore = conversationStore;
             _logger = logger;
             _telemetryClient = telemetryClient;
+        }
+
+        [HttpGet("{conversationId}")]
+        public async Task<IActionResult> GetConversation(string conversationId)
+        {
+            using (_logger.BeginScope("{COnversationID}", conversationId))
+            {
+                try
+                {
+                    var stopWatch = Stopwatch.StartNew();
+                    PostConversationResponse conversation = await _conversationStore.GetConversation(conversationId);
+                    _telemetryClient.TrackMetric("ConversationStore.GetConversation.Time", stopWatch.ElapsedMilliseconds);
+                    return Ok(conversation);
+                }
+                catch (ConversationNotFoundException e)
+                {
+                    _logger.LogError(e, $"Conversation {conversationId} was not found in storage");
+                    return NotFound($"The conversation with Id {conversationId} was not found");
+                }
+                catch (StorageErrorException e)
+                {
+                    _logger.LogError(e, $"Failed to retrieve conversation {conversationId} from storage");
+                    return StatusCode(503, "The service is unavailable, please retry in few minutes");
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Unknown exception occured while retrieving conversation {conversationId} from storage");
+                    return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
+                }
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> PostConversation([FromBody] PostConversationRequest postConversationRequest)
+        {
+            var conversationId = postConversationRequest.Participants[0];
+            if (string.Compare(postConversationRequest.Participants[0], postConversationRequest.Participants[1]) == -1)
+            {
+                conversationId += $"_{postConversationRequest.Participants[1]}";
+            }
+            else
+            {
+                conversationId = $"{postConversationRequest.Participants[1]}_" + conversationId;
+            }
+            using (_logger.BeginScope("{ConversationID}", conversationId))
+            {
+                if (!ValidateConversation(postConversationRequest, out string error1))
+                {
+                    return BadRequest(error1);
+                }
+                if(!ValidateMessage(postConversationRequest.FirstMessage, out string error2))
+                {
+                    return BadRequest(error2);
+                }
+
+                Message message = new Message
+                {
+                    Id = postConversationRequest.FirstMessage.Id,
+                    Text = postConversationRequest.FirstMessage.Text,
+                    SenderUsername = postConversationRequest.FirstMessage.SenderUsername,
+                    UnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                };
+
+                PostConversationResponse conversation = new PostConversationResponse
+                {
+                    Id = conversationId,
+                    CreatedUnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                };
+                try
+                {
+                    var stopWatch = Stopwatch.StartNew();
+                    await _messageStore.AddMessage(message, conversationId);
+                    await _conversationStore.AddConversation(conversation);
+                    _telemetryClient.TrackMetric("ConversationStore.AddConversation.Time", stopWatch.ElapsedMilliseconds);
+                    _telemetryClient.TrackEvent("ConversationAdded");
+                    return CreatedAtAction(nameof(GetConversation), new { conversationId = conversationId}, conversation);
+                }
+                catch (MessageAlreadyExistsException)
+                {
+                    await _conversationStore.AddConversation(conversation);
+                    return CreatedAtAction(nameof(GetConversation), new { conversationId = conversationId }, conversation);
+                }
+                catch (StorageErrorException e)
+                {
+                    _logger.LogError(e, $"Failed to add {conversationId} to storage");
+                    return StatusCode(503, "The service is unavailable, please retry in few minutes");
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Unknown exception occured while adding conversation {conversationId} to storage");
+                    return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
+                }
+            }
         }
 
 
@@ -61,7 +157,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         public async Task<IActionResult> GetMessageList(string conversationId, string continuationToken, int limit, long lastSeenMessageTime)
         {
             using (_logger.BeginScope("{ConversationID}", conversationId))
-            { 
+            {
                 try
                 {
                     var stopWatch = Stopwatch.StartNew();
@@ -84,10 +180,10 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                             NextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenMessageTime}"
                         };
                     }
-                   
+
                     return Ok(messagesResponse);
                 }
-                catch (MessagesNotFoundException e)
+                catch (ConversationNotFoundException e)
                 {
                     _logger.LogError(e, $"Conversation {conversationId} was not found in storage");
                     return NotFound($"The conversation with conversatioId {conversationId} was not found");
@@ -122,7 +218,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     Text = postMessageRequest.Text,
                     SenderUsername = postMessageRequest.SenderUsername,
                     UnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            };
+                };
 
                 try
                 {
@@ -143,7 +239,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     return StatusCode(503, "The service is unavailable, please retry in few minutes");
                 }
                 catch (Exception e)
-                { 
+                {
                     _logger.LogError(e, $"Unknown exception occured while adding message {postMessageRequest.Id} to storage");
                     return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
                 }
@@ -165,6 +261,22 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             if (string.IsNullOrWhiteSpace(message.SenderUsername))
             {
                 error = "The message sender username must not be empty";
+                return false;
+            }
+            error = "";
+            return true;
+        }
+
+        private bool ValidateConversation(PostConversationRequest conversation, out string error)
+        {
+            if (conversation.Participants.Length != 2)
+            {
+                error = "Conversatoin participants must include 2 usernames";
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(conversation.Participants[0]) || string.IsNullOrWhiteSpace(conversation.Participants[1]))// The client app shouldn't allow empty messages. We can choose to allow emtpy messages on our side.
+            {
+                error = "Both participants must not be empty";
                 return false;
             }
             error = "";

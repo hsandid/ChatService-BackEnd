@@ -68,11 +68,11 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return profile;
         }
 
-        private Conversation CreateRandomConversation()
+        private GetConversationsResponseEntry CreateRandomConversation()
         {
 
             string id = CreateRandomString();
-            var conversation = new Conversation
+            var conversation = new GetConversationsResponseEntry
             {
                 Id = id,
                 LastModifiedUnixTime = 001,

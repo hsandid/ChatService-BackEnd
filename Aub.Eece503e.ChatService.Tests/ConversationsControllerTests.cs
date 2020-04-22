@@ -38,7 +38,7 @@ namespace Aub.Eece503e.ChatService.Tests
             UnixTime = 10
         };
 
-        private Conversation _testConversation = new Conversation
+        private GetConversationsResponseEntry _testConversation = new GetConversationsResponseEntry
         {
             Id = "001",
             LastModifiedUnixTime = 000001,
