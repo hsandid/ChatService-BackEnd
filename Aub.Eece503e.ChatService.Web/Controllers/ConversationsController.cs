@@ -31,7 +31,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         [HttpGet("{conversationId}")]
         public async Task<IActionResult> GetConversation(string conversationId)
         {
-            using (_logger.BeginScope("{COnversationID}", conversationId))
+            using (_logger.BeginScope("{ConversationID}", conversationId))
             {
                 try
                 {
