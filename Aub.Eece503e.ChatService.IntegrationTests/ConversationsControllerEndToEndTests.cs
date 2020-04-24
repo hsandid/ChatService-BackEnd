@@ -135,7 +135,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             Assert.Equal(fetchedMessageList1.Messages.ElementAt(2).Text, sentMessageList[3].Text);
             Assert.NotEmpty(fetchedMessageList1.NextUri);
 
-            GetMessagesResponse fetchedMessageList2 = await _chatServiceClient.GetMessageList(conversationId, fetchedMessageList1.NextUri);
+            GetMessagesResponse fetchedMessageList2 = await _chatServiceClient.GetMessageList(fetchedMessageList1.NextUri);
             Assert.Equal(2, fetchedMessageList2.Messages.Count());
             Assert.Equal(fetchedMessageList2.Messages.ElementAt(0).Text, sentMessageList[2].Text);
             Assert.Equal(fetchedMessageList2.Messages.ElementAt(1).Text, sentMessageList[1].Text);

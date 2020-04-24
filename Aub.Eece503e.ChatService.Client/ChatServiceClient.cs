@@ -152,7 +152,7 @@ namespace Aub.Eece503e.ChatService.Client
             return fetchedMessageList;
         }
 
-        public async Task<GetMessagesResponse> GetMessageList(string conversationId, string uri)
+        public async Task<GetMessagesResponse> GetMessageList(string uri)
         {
             var responseMessage = await _httpClient.GetAsync(uri);
             await EnsureSuccessOrThrowConversationsException(responseMessage);

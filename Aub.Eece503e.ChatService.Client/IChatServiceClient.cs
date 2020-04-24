@@ -17,6 +17,6 @@ namespace Aub.Eece503e.ChatService.Client
         Task<Message> AddMessage(string conversationId, PostMessageRequest message);
         Task<Message> GetMessage(string conversationId, string messageId);
         Task<GetMessagesResponse> GetMessageList(string conversationId, int limit, long lastSeenMessageTime);
-        Task<GetMessagesResponse> GetMessageList(string conversationId, string uri);
+        Task<GetMessagesResponse> GetMessageList(string uri);
     }
 }
