@@ -68,22 +68,17 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     MessageList messages = await _messageStore.GetMessages(conversationId, continuationToken, limit, lastSeenMessageTime);
                     _telemetryClient.TrackMetric("MessageStore.GetMessages.Time", stopWatch.ElapsedMilliseconds);
                     GetMessagesResponse messagesResponse;
-                    if (string.IsNullOrWhiteSpace(messages.ContinuationToken))
+                    String nextUri = "";
+                    if (!string.IsNullOrWhiteSpace(messages.ContinuationToken))
                     {
-                        messagesResponse = new GetMessagesResponse
-                        {
-                            Messages = messages.Messages,
-                            NextUri = ""
-                        };
+                        nextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenMessageTime}";
                     }
-                    else
+
+                    messagesResponse = new GetMessagesResponse
                     {
-                        messagesResponse = new GetMessagesResponse
-                        {
-                            Messages = messages.Messages,
-                            NextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenMessageTime}"
-                        };
-                    }
+                        Messages = messages.Messages,
+                        NextUri = nextUri
+                    };
                    
                     return Ok(messagesResponse);
                 }
