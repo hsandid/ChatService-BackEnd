@@ -39,7 +39,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 }
                 catch (ProfileNotFoundException e)
                 {
-                    _logger.LogError(e, $"Profile {username} already exists in storage");
+                    _logger.LogError(e, $"Profile {username} was not found in storage");
                     return NotFound($"The profile with username {username} was not found");
                 }
                 catch (StorageErrorException e)

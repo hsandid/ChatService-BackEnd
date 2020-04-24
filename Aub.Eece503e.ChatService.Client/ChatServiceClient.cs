@@ -36,6 +36,15 @@ namespace Aub.Eece503e.ChatService.Client
             }
         }
 
+        private async Task EnsureSuccessOrThrowConversationsException(HttpResponseMessage responseMessage)
+        {
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                string message = $"{responseMessage.ReasonPhrase}, {await responseMessage.Content.ReadAsStringAsync()}";
+                throw new ChatServiceException(message, responseMessage.StatusCode);
+            }
+        }
+
         public async Task<UploadImageResponse> UploadImage(Stream stream)
         {
             HttpContent fileStreamContent = new StreamContent(stream);
@@ -114,6 +123,42 @@ namespace Aub.Eece503e.ChatService.Client
         {
             var responseMessage = await _httpClient.DeleteAsync($"api/profile/{username}");
             await EnsureSuccessOrThrowProfileException(responseMessage);
+        }
+
+        public async Task<Message> AddMessage(string conversationId, PostMessageRequest message)
+        {
+            string json = JsonConvert.SerializeObject(message);
+            HttpResponseMessage responseMessage = await _httpClient.PostAsync($"api/conversations/{conversationId}/messages", new StringContent(json, Encoding.UTF8,
+                "application/json"));
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string responseJson = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedMessage = JsonConvert.DeserializeObject<Message>(responseJson);
+            return fetchedMessage;
+        }
+        public async Task<Message> GetMessage(string conversationId, string messageId)
+        {
+            var responseMessage = await _httpClient.GetAsync($"api/conversations/{conversationId}/messages/{messageId}");
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedMessage = JsonConvert.DeserializeObject<Message>(json);
+            return fetchedMessage;
+        }
+        public async Task<GetMessagesResponse> GetMessageList(string conversationId, int limit, long lastSeenMessageTime)
+        {
+            var responseMessage = await _httpClient.GetAsync($"api/conversations/{conversationId}/messages?limit={limit}&lastSeenMessageTime={lastSeenMessageTime}");
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedMessageList = JsonConvert.DeserializeObject<GetMessagesResponse>(json);
+            return fetchedMessageList;
+        }
+
+        public async Task<GetMessagesResponse> GetMessageList(string uri)
+        {
+            var responseMessage = await _httpClient.GetAsync(uri);
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedMessageList = JsonConvert.DeserializeObject<GetMessagesResponse>(json);
+            return fetchedMessageList;
         }
     }
 }
