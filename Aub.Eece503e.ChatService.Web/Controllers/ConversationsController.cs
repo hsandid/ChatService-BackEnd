@@ -157,30 +157,25 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
         public async Task<IActionResult> GetMessageList(string conversationId, string continuationToken, int limit, long lastSeenMessageTime)
         {
             using (_logger.BeginScope("{ConversationID}", conversationId))
-            {
+            { 
                 try
                 {
                     var stopWatch = Stopwatch.StartNew();
                     MessageList messages = await _messageStore.GetMessages(conversationId, continuationToken, limit, lastSeenMessageTime);
                     _telemetryClient.TrackMetric("MessageStore.GetMessages.Time", stopWatch.ElapsedMilliseconds);
                     GetMessagesResponse messagesResponse;
-                    if (string.IsNullOrWhiteSpace(messages.ContinuationToken))
+                    String nextUri = "";
+                    if (!string.IsNullOrWhiteSpace(messages.ContinuationToken))
                     {
-                        messagesResponse = new GetMessagesResponse
-                        {
-                            Messages = messages.Messages,
-                            NextUri = ""
-                        };
-                    }
-                    else
-                    {
-                        messagesResponse = new GetMessagesResponse
-                        {
-                            Messages = messages.Messages,
-                            NextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenMessageTime}"
-                        };
+                        nextUri = $"api/conversations/{conversationId}/messages?continuationToken={WebUtility.UrlEncode(messages.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenMessageTime}";
                     }
 
+                    messagesResponse = new GetMessagesResponse
+                    {
+                        Messages = messages.Messages,
+                        NextUri = nextUri
+                    };
+                   
                     return Ok(messagesResponse);
                 }
                 catch (ConversationNotFoundException e)
