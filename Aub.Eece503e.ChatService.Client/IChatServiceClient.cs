@@ -14,9 +14,16 @@ namespace Aub.Eece503e.ChatService.Client
         Task<Profile> GetProfile(string username);
         Task DeleteProfile(string username);
         Task UpdateProfile(string username, Profile profile);
-        Task<Message> AddMessage(string conversationId, PostMessageRequest message);
-        Task<Message> GetMessage(string conversationId, string messageId);
+        Task<PostMessageResponse> AddMessage(string conversationId, PostMessageRequest message);
+        Task<PostMessageResponse> GetMessage(string conversationId, string messageId);
         Task<GetMessagesResponse> GetMessageList(string conversationId, int limit, long lastSeenMessageTime);
         Task<GetMessagesResponse> GetMessageList(string uri);
+
+        //TO-DO
+        //Add functions related to conversations
+
+        //AddConversation
+        //GetConversation
+        //GetConversationList (with/without uri)
     }
 }

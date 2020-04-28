@@ -32,6 +32,7 @@ namespace Aub.Eece503e.ChatService.Web
             services.AddSingleton<IProfileStore, AzureTableProfileStore>();
             services.AddSingleton<IImageStore, AzureBlobContainerImageStore>();
             services.AddSingleton<IMessageStore, DocumentDbMessageStore >();
+            services.AddSingleton<IConversationStore, DocumentDbConversationStore>();
 
             services.AddOptions();
             services.Configure<AzureStorageSettings>(Configuration.GetSection("AzureStorageSettings"));

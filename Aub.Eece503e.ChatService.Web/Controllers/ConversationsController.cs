@@ -28,6 +28,12 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             _telemetryClient = telemetryClient;
         }
 
+        //To-Do
+        //Take care of commented functions
+        //GetConversation
+        //GetConversationList
+        //PostConversation
+
         //[HttpGet("{conversationId}")]
         //public async Task<IActionResult> GetConversation(string conversationId)
         //{
@@ -131,7 +137,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 try
                 {
                     var stopWatch = Stopwatch.StartNew();
-                    Message message = await _messageStore.GetMessage(conversationId, messageId);
+                    PostMessageResponse message = await _messageStore.GetMessage(conversationId, messageId);
                     _telemetryClient.TrackMetric("MessageStore.GetMessage.Time", stopWatch.ElapsedMilliseconds);
                     return Ok(message);
                 }
@@ -207,7 +213,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     return BadRequest(error);
                 }
 
-                Message message = new Message
+                PostMessageResponse message = new PostMessageResponse
                 {
                     Id = postMessageRequest.Id,
                     Text = postMessageRequest.Text,

@@ -17,8 +17,10 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
     {
         private readonly IChatServiceClient _chatServiceClient;
         private readonly Random _rand = new Random();
-
         private readonly ConcurrentBag<UploadImageResponse> _messagesToCleanup = new ConcurrentBag<UploadImageResponse>();
+
+        // To-Do 
+        // Add integration tests for the conversation API calls
 
         public ConversationsControllerEndToEndTests(IEndToEndTestsFixture fixture)
         {
@@ -121,7 +123,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task PostGetMessageListContinuationTokenTest()
         {
             string conversationId = CreateRandomString();
-            Message[] sentMessageList = new Message[6];
+            PostMessageResponse[] sentMessageList = new PostMessageResponse[6];
 
             for (int messageCount = 0; messageCount < 6; messageCount++)
             {
@@ -152,7 +154,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task PostGetMessageListLastSeenMessageTimeTest(int indexOfLastSeenMessage)
         {
             string conversationId = CreateRandomString();
-            Message[] sentMessageList = new Message[11];
+            PostMessageResponse[] sentMessageList = new PostMessageResponse[11];
 
             for(int messageCount = 0; messageCount<11; messageCount++)
             {
@@ -181,7 +183,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
                 Text = text,
                 SenderUsername = senderUsername
             };
-            var e = await Assert.ThrowsAsync<ChatServiceException>(() => _chatServiceClient.AddMessage(conversation.Id, message));
+            var e = await Assert.ThrowsAsync<ConversationServiceException>(() => _chatServiceClient.AddMessage(conversation.Id, message));
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
 
@@ -191,7 +193,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         {
             var message = CreateRandomPostMessageRequest();
             var conversation = CreateRandomConversation();
-            var e = await Assert.ThrowsAsync<ChatServiceException>(() => _chatServiceClient.GetMessage(conversation.Id, message.Id));
+            var e = await Assert.ThrowsAsync<ConversationServiceException>(() => _chatServiceClient.GetMessage(conversation.Id, message.Id));
             Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
         }
 
