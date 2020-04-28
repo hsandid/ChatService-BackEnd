@@ -28,99 +28,99 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             _telemetryClient = telemetryClient;
         }
 
-        [HttpGet("{conversationId}")]
-        public async Task<IActionResult> GetConversation(string conversationId)
-        {
-            using (_logger.BeginScope("{ConversationID}", conversationId))
-            {
-                try
-                {
-                    var stopWatch = Stopwatch.StartNew();
-                    PostConversationResponse conversation = await _conversationStore.GetConversation(conversationId);
-                    _telemetryClient.TrackMetric("ConversationStore.GetConversation.Time", stopWatch.ElapsedMilliseconds);
-                    return Ok(conversation);
-                }
-                catch (ConversationNotFoundException e)
-                {
-                    _logger.LogError(e, $"Conversation {conversationId} was not found in storage");
-                    return NotFound($"The conversation with Id {conversationId} was not found");
-                }
-                catch (StorageErrorException e)
-                {
-                    _logger.LogError(e, $"Failed to retrieve conversation {conversationId} from storage");
-                    return StatusCode(503, "The service is unavailable, please retry in few minutes");
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, $"Unknown exception occured while retrieving conversation {conversationId} from storage");
-                    return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
-                }
-            }
-        }
+        //[HttpGet("{conversationId}")]
+        //public async Task<IActionResult> GetConversation(string conversationId)
+        //{
+        //    using (_logger.BeginScope("{ConversationID}", conversationId))
+        //    {
+        //        try
+        //        {
+        //            var stopWatch = Stopwatch.StartNew();
+        //            PostConversationResponse conversation = await _conversationStore.GetConversation(conversationId);
+        //            _telemetryClient.TrackMetric("ConversationStore.GetConversation.Time", stopWatch.ElapsedMilliseconds);
+        //            return Ok(conversation);
+        //        }
+        //        catch (ConversationNotFoundException e)
+        //        {
+        //            _logger.LogError(e, $"Conversation {conversationId} was not found in storage");
+        //            return NotFound($"The conversation with Id {conversationId} was not found");
+        //        }
+        //        catch (StorageErrorException e)
+        //        {
+        //            _logger.LogError(e, $"Failed to retrieve conversation {conversationId} from storage");
+        //            return StatusCode(503, "The service is unavailable, please retry in few minutes");
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            _logger.LogError(e, $"Unknown exception occured while retrieving conversation {conversationId} from storage");
+        //            return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
+        //        }
+        //    }
+        //}
 
 
-        [HttpPost]
-        public async Task<IActionResult> PostConversation([FromBody] PostConversationRequest postConversationRequest)
-        {
-            var conversationId = postConversationRequest.Participants[0];
-            if (string.Compare(postConversationRequest.Participants[0], postConversationRequest.Participants[1]) == -1)
-            {
-                conversationId += $"_{postConversationRequest.Participants[1]}";
-            }
-            else
-            {
-                conversationId = $"{postConversationRequest.Participants[1]}_" + conversationId;
-            }
-            using (_logger.BeginScope("{ConversationID}", conversationId))
-            {
-                if (!ValidateConversation(postConversationRequest, out string error1))
-                {
-                    return BadRequest(error1);
-                }
-                if(!ValidateMessage(postConversationRequest.FirstMessage, out string error2))
-                {
-                    return BadRequest(error2);
-                }
+        //[HttpPost]
+        //public async Task<IActionResult> PostConversation([FromBody] PostConversationRequest postConversationRequest)
+        //{
+        //    var conversationId = postConversationRequest.Participants[0];
+        //    if (string.Compare(postConversationRequest.Participants[0], postConversationRequest.Participants[1]) == -1)
+        //    {
+        //        conversationId += $"_{postConversationRequest.Participants[1]}";
+        //    }
+        //    else
+        //    {
+        //        conversationId = $"{postConversationRequest.Participants[1]}_" + conversationId;
+        //    }
+        //    using (_logger.BeginScope("{ConversationID}", conversationId))
+        //    {
+        //        if (!ValidateConversation(postConversationRequest, out string error1))
+        //        {
+        //            return BadRequest(error1);
+        //        }
+        //        if(!ValidateMessage(postConversationRequest.FirstMessage, out string error2))
+        //        {
+        //            return BadRequest(error2);
+        //        }
 
-                Message message = new Message
-                {
-                    Id = postConversationRequest.FirstMessage.Id,
-                    Text = postConversationRequest.FirstMessage.Text,
-                    SenderUsername = postConversationRequest.FirstMessage.SenderUsername,
-                    UnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                };
+        //        Message message = new Message
+        //        {
+        //            Id = postConversationRequest.FirstMessage.Id,
+        //            Text = postConversationRequest.FirstMessage.Text,
+        //            SenderUsername = postConversationRequest.FirstMessage.SenderUsername,
+        //            UnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        //        };
 
-                PostConversationResponse conversation = new PostConversationResponse
-                {
-                    Id = conversationId,
-                    CreatedUnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                };
-                try
-                {
-                    var stopWatch = Stopwatch.StartNew();
-                    await _messageStore.AddMessage(message, conversationId);
-                    await _conversationStore.AddConversation(conversation);
-                    _telemetryClient.TrackMetric("ConversationStore.AddConversation.Time", stopWatch.ElapsedMilliseconds);
-                    _telemetryClient.TrackEvent("ConversationAdded");
-                    return CreatedAtAction(nameof(GetConversation), new { conversationId = conversationId}, conversation);
-                }
-                catch (MessageAlreadyExistsException)
-                {
-                    await _conversationStore.AddConversation(conversation);
-                    return CreatedAtAction(nameof(GetConversation), new { conversationId = conversationId }, conversation);
-                }
-                catch (StorageErrorException e)
-                {
-                    _logger.LogError(e, $"Failed to add {conversationId} to storage");
-                    return StatusCode(503, "The service is unavailable, please retry in few minutes");
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, $"Unknown exception occured while adding conversation {conversationId} to storage");
-                    return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
-                }
-            }
-        }
+        //        PostConversationResponse conversation = new PostConversationResponse
+        //        {
+        //            Id = conversationId,
+        //            CreatedUnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        //        };
+        //        try
+        //        {
+        //            var stopWatch = Stopwatch.StartNew();
+        //            await _messageStore.AddMessage(message, conversationId);
+        //            await _conversationStore.AddConversation(conversation);
+        //            _telemetryClient.TrackMetric("ConversationStore.AddConversation.Time", stopWatch.ElapsedMilliseconds);
+        //            _telemetryClient.TrackEvent("ConversationAdded");
+        //            return CreatedAtAction(nameof(GetConversation), new { conversationId = conversationId}, conversation);
+        //        }
+        //        catch (MessageAlreadyExistsException)
+        //        {
+        //            await _conversationStore.AddConversation(conversation);
+        //            return CreatedAtAction(nameof(GetConversation), new { conversationId = conversationId }, conversation);
+        //        }
+        //        catch (StorageErrorException e)
+        //        {
+        //            _logger.LogError(e, $"Failed to add {conversationId} to storage");
+        //            return StatusCode(503, "The service is unavailable, please retry in few minutes");
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            _logger.LogError(e, $"Unknown exception occured while adding conversation {conversationId} to storage");
+        //            return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
+        //        }
+        //    }
+        //}
 
 
         [HttpGet("{conversationId}/messages/{messageId}")]
