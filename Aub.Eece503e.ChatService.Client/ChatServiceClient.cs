@@ -17,6 +17,10 @@ namespace Aub.Eece503e.ChatService.Client
         {
             _httpClient = httpClient;
         }
+       
+
+        //To-Do
+        //Must add all functions related to conversations
 
         private async Task EnsureSuccessOrThrowImageException(HttpResponseMessage responseMessage)
         {
