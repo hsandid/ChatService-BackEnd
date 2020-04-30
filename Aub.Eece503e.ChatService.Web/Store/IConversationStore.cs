@@ -5,8 +5,10 @@ namespace Aub.Eece503e.ChatService.Web.Store
 {
 	public interface IConversationStore
 	{
-		Task<PostConversationResponse> GetConversation(string conversationId);
-		Task AddConversation(PostConversationResponse conversation);
-		Task<ConversationList> GetConversations(string username, string continuationToken, int limit, long lastSeenCOnversationTime);
+		Task AddConversation(PostConversationResponse conversation, string[] participants);
+		Task<PostConversationResponse> GetConversation(string conversationId, string[] participants);
+		Task<ConversationList> GetConversations(string username, string continuationToken, int limit, long lastSeenConversationTime);
+
+		//We still need to add a function to update conversations, maybe as a service ?
 	}
 }

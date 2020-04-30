@@ -121,7 +121,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task PostGetMessageListContinuationTokenTest()
         {
             string conversationId = CreateRandomString();
-            Message[] sentMessageList = new Message[6];
+            PostMessageResponse[] sentMessageList = new PostMessageResponse[6];
 
             for (int messageCount = 0; messageCount < 6; messageCount++)
             {
@@ -152,7 +152,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task PostGetMessageListLastSeenMessageTimeTest(int indexOfLastSeenMessage)
         {
             string conversationId = CreateRandomString();
-            Message[] sentMessageList = new Message[11];
+            PostMessageResponse[] sentMessageList = new PostMessageResponse[11];
 
             for(int messageCount = 0; messageCount<11; messageCount++)
             {

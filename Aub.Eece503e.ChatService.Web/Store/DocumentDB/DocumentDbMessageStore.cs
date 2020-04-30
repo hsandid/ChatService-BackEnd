@@ -25,7 +25,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             _options = options;
         }
 
-        public async Task AddMessage(Message message, string conversationId)
+        public async Task AddMessage(PostMessageResponse message, string conversationId)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             }
         }
 
-        public async Task<Message> GetMessage(string conversationId, string messageId)
+        public async Task<PostMessageResponse> GetMessage(string conversationId, string messageId)
         {
             try
             {
@@ -99,7 +99,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
         }
 
 
-        private static DocumentDbMessageEntity ToEntity(string conversationId, Message message)
+        private static DocumentDbMessageEntity ToEntity(string conversationId, PostMessageResponse message)
         {
             return new DocumentDbMessageEntity
             {
@@ -121,9 +121,9 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             };
         }
 
-        private static Message ToMessage(DocumentDbMessageEntity entity)
+        private static PostMessageResponse ToMessage(DocumentDbMessageEntity entity)
         {
-            return new Message
+            return new PostMessageResponse
             {
                 Id = entity.Id,
                 Text = entity.Text,

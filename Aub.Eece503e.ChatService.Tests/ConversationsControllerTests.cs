@@ -20,9 +20,6 @@ namespace Aub.Eece503e.ChatService.Tests
 {
     public class ConversationsControllerTests
     {
-        // We have three api calls
-        // Need 6 tests
-
         private PostMessageRequest _testPostMessageRequest = new PostMessageRequest
         {
             Id = "001",
@@ -30,7 +27,7 @@ namespace Aub.Eece503e.ChatService.Tests
             SenderUsername = "JohnSmith"
         };
 
-        private Message _testMessage = new Message
+        private PostMessageResponse _testMessage = new PostMessageResponse
         {
             Id = "001",
             Text = "RandomMessage",

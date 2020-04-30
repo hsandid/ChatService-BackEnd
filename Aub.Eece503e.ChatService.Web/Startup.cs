@@ -20,8 +20,6 @@ namespace Aub.Eece503e.ChatService.Web
         }
 
         public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
@@ -32,6 +30,7 @@ namespace Aub.Eece503e.ChatService.Web
             services.AddSingleton<IProfileStore, AzureTableProfileStore>();
             services.AddSingleton<IImageStore, AzureBlobContainerImageStore>();
             services.AddSingleton<IMessageStore, DocumentDbMessageStore >();
+            services.AddSingleton<IConversationStore, DocumentDbConversationsStore>();
 
             services.AddOptions();
             services.Configure<AzureStorageSettings>(Configuration.GetSection("AzureStorageSettings"));
