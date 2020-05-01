@@ -24,13 +24,6 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             _documentClient = documentClient;
             _options = options;
         }
-
-        //public async Task UpdateConversation(PostConversationResponse conversation, string[] participants,  long updatedConversationTime)
-        //{
-            
-        //}
-        // ADDITIONAL : Concerning the ConversationNotFoundException, should we check if the username exists ? It's fine if there are no conversations associated to the user as we can return
-        // an empty array
         public async Task<ConversationList> GetConversations(string username, string continuationToken, int limit, long lastSeenConversationTime)
         {
             try
@@ -73,86 +66,60 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
                 Participants = entity.Participants
             };
         }
+        
+        public async Task<PostConversationResponse> AddConversation(PostConversationResponse conversation, string[] participants)
+        {
+                Task<PostConversationResponse> task1 = AddConversationToPartition(conversation, participants, participants[0]);
+                Task<PostConversationResponse> task2 = AddConversationToPartition(conversation, participants, participants[1]);
+                await Task.WhenAll(task1, task2);
 
-        //Some interesting questions regarding this function
-        //We can address the edge cases by throwing a specific exception here, and addressing it on an upper layer (i.e. service/controller...)
-        //Interesting ! If a conversation already exists, we can make use of GetConversation and only get that previous conversation which has already been added, with the correct UnixTime at creation
-        //Dealing with Edge cases should be left for later, we have to get something working first
-        public async Task AddConversation(PostConversationResponse conversation, string[] participants)
+            //Here we have the choice to return task1.Result or task2.Result.
+            //In most cases, it won't matter.
+            //In an edge case where only one conversation fails. The client will try to create this conversation again.
+            //In this case, the one that failed first will have a more recent created time.
+            // We chose to always return the oldest for no technical reason.
+            return task1.Result.CreatedUnixTime <= task2.Result.CreatedUnixTime ? task1.Result : task2.Result;
+        }
+
+        private async Task<PostConversationResponse> AddConversationToPartition(PostConversationResponse conversation, string[] participants, string username)
         {
             try
             {
-                var entity = ToEntity(conversation, participants, participants[0]);
+                var entity = ToEntity(conversation, participants, username);
                 await _documentClient.CreateDocumentAsync(DocumentCollectionUri, entity);
+                return conversation;
             }
             catch (DocumentClientException e)
             {
                 if ((int)e.StatusCode == 409)
                 {
-                    throw new ConversationAlreadyExistsException($"Conversation {conversation.Id} already exists in storage");
+                    return await GetConversation(conversation.Id, username);
                 }
 
                 throw new StorageErrorException($"Failed to add conversation {conversation.Id} to user {participants[0]}", e);
             }
 
-            try
-            {
-                var entity = ToEntity(conversation, participants, participants[1]);
-                await _documentClient.CreateDocumentAsync(DocumentCollectionUri, entity);
-            }
-            catch (DocumentClientException e)
-            {
-                if ((int)e.StatusCode == 409)
-                {
-                    throw new ConversationAlreadyExistsException($"Conversation {conversation.Id} already exists in storage");
-                }
-
-                throw new StorageErrorException($"Failed to add conversation {conversation.Id} to user {participants[1]}", e);
-            }
-
-
         }
 
-        //We can use this function to check if a conversation exists in the two partitions associated to each participant
-        //We can modify it to do help us address edge cases, like making it throw more specific exceptions which can be addressed on the storage layer
-        //Also, returning on the second call is okay or not ?
-        public async Task<PostConversationResponse> GetConversation(string conversationId, string[] participants)
+        private async Task<PostConversationResponse> GetConversation(string conversationId, string username)
         {
             try
             {
                 var entity = await _documentClient.ReadDocumentAsync<DocumentDbConversationEntity>(
                     CreateDocumentUri(conversationId),
-                    new RequestOptions { PartitionKey = new PartitionKey($"c_{participants[0]}") });
-            }
-            catch (DocumentClientException e)
-            {
-                if ((int)e.StatusCode == 404)
-                {
-                    throw new ConversationNotFoundException($"Conversation {conversationId} was not found in partition of user {participants[0]}");
-                }
-
-                throw new StorageErrorException($"Failed to retrieve conversation {conversationId} from user partition {participants[0]}", e);
-            }
-
-            try
-            {
-                var entity = await _documentClient.ReadDocumentAsync<DocumentDbConversationEntity>(
-                    CreateDocumentUri(conversationId),
-                    new RequestOptions { PartitionKey = new PartitionKey($"c_{participants[1]}") });
+                    new RequestOptions { PartitionKey = new PartitionKey($"c_{username}") });
                 return ToConversation(entity);
             }
             catch (DocumentClientException e)
             {
                 if ((int)e.StatusCode == 404)
                 {
-                    throw new ConversationNotFoundException($"Conversation {conversationId} was not found in partition of user {participants[1]}");
+                    throw new ConversationNotFoundException($"Conversation {conversationId} was not found in partition of user {username}");
                 }
 
-                throw new StorageErrorException($"Failed to retrieve conversation {conversationId} from user partition {participants[1]}", e);
+                throw new StorageErrorException($"Failed to retrieve conversation {conversationId} from user partition {username}", e);
             }
         }
-
-        //In this case, shouldn't CreatedUnixTime only be LastModifiedUnixTime ?
         private static PostConversationResponse ToConversation(DocumentDbConversationEntity entity)
         {
             return new PostConversationResponse

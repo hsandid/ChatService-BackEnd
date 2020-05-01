@@ -25,18 +25,20 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             _options = options;
         }
 
-        public async Task AddMessage(PostMessageResponse message, string conversationId)
+        public async Task<PostMessageResponse> AddMessage(PostMessageResponse message, string conversationId)
         {
             try
             {
                 var entity = ToEntity(conversationId, message);
                 await _documentClient.CreateDocumentAsync(DocumentCollectionUri, entity);
+                return message;
             }
             catch (DocumentClientException e)
             {
                 if((int)e.StatusCode == 409)
                 {
-                    throw new MessageAlreadyExistsException($"Message {message.Id} already exists in storage");
+                    var originalMessage = await GetMessage(conversationId, message.Id);
+                    return originalMessage;
                 }
 
                 throw new StorageErrorException($"Failed to add message {message.Id} to conversation {conversationId}", e);

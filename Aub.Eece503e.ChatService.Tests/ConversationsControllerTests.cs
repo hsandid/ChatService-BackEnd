@@ -57,34 +57,6 @@ namespace Aub.Eece503e.ChatService.Tests
         private static string _testConversationId = "hadi_brayan";
 
         [Fact]
-        public async Task GetMessageReturns503WhenStorageIsDown()
-        {
-            var conversationsServiceMock = new Mock<IConversationsService>();
-            conversationsServiceMock.Setup(store => store.GetMessage(_testConversation.Id, _testPostMessageRequest.Id)).ThrowsAsync(new StorageErrorException());
-
-            var loggerStub = new ConversationsControllerLoggerStub();
-            var controller = new ConversationsController(conversationsServiceMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.GetMessage(_testConversation.Id, _testPostMessageRequest.Id);
-
-            AssertUtils.HasStatusCode(HttpStatusCode.ServiceUnavailable, result);
-            Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
-        }
-
-        [Fact]
-        public async Task GetMessageReturns500WhenExceptionIsNotKnown()
-        {
-            var conversationsServiceMock = new Mock<IConversationsService>();
-            conversationsServiceMock.Setup(store => store.GetMessage(_testConversation.Id, _testPostMessageRequest.Id)).ThrowsAsync(new Exception("Test Exception"));
-
-            var loggerStub = new ConversationsControllerLoggerStub();
-            var controller = new ConversationsController(conversationsServiceMock.Object, loggerStub, new TelemetryClient());
-            IActionResult result = await controller.GetMessage(_testConversation.Id, _testPostMessageRequest.Id);
-
-            AssertUtils.HasStatusCode(HttpStatusCode.InternalServerError, result);
-            Assert.Contains(LogLevel.Error, loggerStub.LogEntries.Select(entry => entry.Level));
-        }
-
-        [Fact]
         public async Task GetMessageListReturns503WhenStorageIsDown()
         {
             var conversationsServiceMock = new Mock<IConversationsService>();

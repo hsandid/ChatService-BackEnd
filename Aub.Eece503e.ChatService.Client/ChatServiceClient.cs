@@ -139,14 +139,6 @@ namespace Aub.Eece503e.ChatService.Client
             var fetchedMessage = JsonConvert.DeserializeObject<PostMessageResponse>(responseJson);
             return fetchedMessage;
         }
-        public async Task<PostMessageResponse> GetMessage(string conversationId, string messageId)
-        {
-            var responseMessage = await _httpClient.GetAsync($"api/conversations/{conversationId}/messages/{messageId}");
-            await EnsureSuccessOrThrowConversationsException(responseMessage);
-            string json = await responseMessage.Content.ReadAsStringAsync();
-            var fetchedMessage = JsonConvert.DeserializeObject<PostMessageResponse>(json);
-            return fetchedMessage;
-        }
         public async Task<GetMessagesResponse> GetMessageList(string conversationId, int limit, long lastSeenMessageTime)
         {
             var responseMessage = await _httpClient.GetAsync($"api/conversations/{conversationId}/messages?limit={limit}&lastSeenMessageTime={lastSeenMessageTime}");

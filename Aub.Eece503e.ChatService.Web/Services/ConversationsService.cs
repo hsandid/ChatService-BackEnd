@@ -1,13 +1,14 @@
 ﻿using Aub.Eece503e.ChatService.Datacontracts;
 using Aub.Eece503e.ChatService.Web.Store;
-using Aub.Eece503e.ChatService.Web.Store.Exceptions;
-using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using System.Diagnostics;
 using System.Net;
+using Aub.Eece503e.ChatService.Web.Store.Exceptions;
+
 namespace Aub.Eece503e.ChatService.Web.Services
 {
     public class ConversationsService : IConversationsService
@@ -26,26 +27,10 @@ namespace Aub.Eece503e.ChatService.Web.Services
             _telemetryClient = telemetryClient;
             _logger = logger;
         }
-
-        //Concerning Exceptions, how can we 'propogate' them from the storage layer to the service layer and up to the controller ?
-        //Seems like there should not be any exceptions on this layer
-        //Should we assign the metrics here to ProfileStore.GetProfile.Time ?
-        public async Task<Profile> GetProfileInformation(string username)
-        {
-            using (_logger.BeginScope("{Username}", username))
-            {
-                    var stopWatch = Stopwatch.StartNew();
-                    Profile profile = await _profileStore.GetProfile(username);
-                    _telemetryClient.TrackMetric("ProfileStore.GetProfile.Time", stopWatch.ElapsedMilliseconds);
-                    return profile;
-            }
-        }
-
-        //We should add a function to update the conversations in each partition accordingly
         public async Task<PostMessageResponse> PostMessage(string conversationId, PostMessageRequest postMessageRequest)
         {
             using (_logger.BeginScope("{Message_ID}", postMessageRequest.Id))
-            {            
+            {
                 PostMessageResponse message = new PostMessageResponse
                 {
                     Id = postMessageRequest.Id,
@@ -53,30 +38,11 @@ namespace Aub.Eece503e.ChatService.Web.Services
                     SenderUsername = postMessageRequest.SenderUsername,
                     UnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                 };
-
-                try
-                {
-                    var stopWatch = Stopwatch.StartNew();
-                    await _messageStore.AddMessage(message, conversationId);
-                    _telemetryClient.TrackMetric("MessageStore.AddMessage.Time", stopWatch.ElapsedMilliseconds);
-                    _telemetryClient.TrackEvent("MessageAdded");
-                    return message;
-                }
-                catch (MessageAlreadyExistsException)
-                {
-                    var originalMessage = await _messageStore.GetMessage(conversationId, message.Id);
-                    return originalMessage;
-                }
-        }
-        }
-        public async Task<PostMessageResponse> GetMessage(string conversationId, string messageId)
-        {
-            using (_logger.BeginScope("{MessageID}", messageId))
-            {
-                    var stopWatch = Stopwatch.StartNew();
-                    PostMessageResponse message = await _messageStore.GetMessage(conversationId, messageId);
-                    _telemetryClient.TrackMetric("MessageStore.GetMessage.Time", stopWatch.ElapsedMilliseconds);
-                    return message;
+                var stopWatch = Stopwatch.StartNew();
+                var fetchedMessage = await _messageStore.AddMessage(message, conversationId);
+                _telemetryClient.TrackMetric("MessageStore.AddMessage.Time", stopWatch.ElapsedMilliseconds);
+                _telemetryClient.TrackEvent("MessageAdded");
+                return fetchedMessage;
             }
         }
         public async Task<GetMessagesResponse> GetMessageList(string conversationId, string continuationToken, int limit, long lastSeenMessageTime)
@@ -120,48 +86,12 @@ namespace Aub.Eece503e.ChatService.Web.Services
                     Id = conversationId,
                     CreatedUnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                 };
-                try
-                {
-                    var stopWatch = Stopwatch.StartNew();
-                    await _messageStore.AddMessage(message, conversationId);
-                    await _conversationStore.AddConversation(conversation, postConversationRequest.Participants);
-                    _telemetryClient.TrackMetric("ConversationStore.AddConversation.Time", stopWatch.ElapsedMilliseconds);
-                    _telemetryClient.TrackEvent("ConversationAdded");
-                    return conversation;
-                }
-                catch (MessageAlreadyExistsException)
-                {
-                    //Nested try/catch block. Is it a good idea ?
-                    try
-                    {
-                        //Should we call the store directly or pass through the service function?
-                        await _conversationStore.AddConversation(conversation, postConversationRequest.Participants);
-                        return conversation;
-                    }
-                    catch (ConversationAlreadyExistsException)
-                    {
-                        var fetchedConversation = await _conversationStore.GetConversation(conversation.Id, postConversationRequest.Participants);
-                        return fetchedConversation;
-                    }
-                    
-                    
-                }
-                catch (ConversationAlreadyExistsException)
-                {
-                    var fetchedConversation = await _conversationStore.GetConversation(conversation.Id, postConversationRequest.Participants);
-                    return fetchedConversation;
-                }
-
-            }
-        }
-        public async Task<PostConversationResponse> GetConversation(string conversationId, string[] participants)
-        {
-            using (_logger.BeginScope("{ConversationID}", conversationId))
-            {
-                    var stopWatch = Stopwatch.StartNew();
-                    PostConversationResponse conversation = await _conversationStore.GetConversation(conversationId, participants);
-                    _telemetryClient.TrackMetric("ConversationStore.GetConversation.Time", stopWatch.ElapsedMilliseconds);
-                    return conversation; 
+                var stopWatch = Stopwatch.StartNew();
+                await _messageStore.AddMessage(message, conversationId);
+                var fetchedConversation = await _conversationStore.AddConversation(conversation, postConversationRequest.Participants);
+                _telemetryClient.TrackMetric("ConversationStore.AddConversation.Time", stopWatch.ElapsedMilliseconds);
+                _telemetryClient.TrackEvent("ConversationAdded");
+                return fetchedConversation;
             }
         }
         public async Task<GetConversationsResponse> GetConversations(string username, string continuationToken, int limit, long lastSeenConversationTime)
@@ -171,15 +101,15 @@ namespace Aub.Eece503e.ChatService.Web.Services
                     var stopWatch = Stopwatch.StartNew();
                     ConversationList conversations = await _conversationStore.GetConversations(username, continuationToken, limit, lastSeenConversationTime);
                     _telemetryClient.TrackMetric("ConversationStore.GetConversations.Time", stopWatch.ElapsedMilliseconds);
-                    String nextUri = "";
+                    string nextUri = "";
                     if (!string.IsNullOrWhiteSpace(conversations.ContinuationToken))
                     {
                         nextUri = $"api/conversations?username={username}&continuationToken={WebUtility.UrlEncode(conversations.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenConversationTime}";
                     }
 
-                    string recipientUsername = "";
+                    string recipientUsername;
                     Profile recipient;
-                    GetConversationsResponseEntry[] conversationEntries = new GetConversationsResponseEntry[conversations.Conversations.Length];
+                    List<GetConversationsResponseEntry> conversationEntries = new List<GetConversationsResponseEntry>();
                     for (int index = 0; index < conversations.Conversations.Length; index++)
                     {
                         if (conversations.Conversations[index].Participants[0] != username)
@@ -190,21 +120,27 @@ namespace Aub.Eece503e.ChatService.Web.Services
                         {
                             recipientUsername = conversations.Conversations[index].Participants[1];
                         }
-
-                        recipient = await GetProfileInformation(recipientUsername);
-                        conversationEntries[index] = new GetConversationsResponseEntry
+                        try
                         {
-                            LastModifiedUnixTime = conversations.Conversations[index].LastModifiedUnixTime,
-                            Id = conversations.Conversations[index].Id,
-                            Recipient = recipient
-                        };
-
+                            recipient = await _profileStore.GetProfile(recipientUsername);
+                             conversationEntries.Add(new GetConversationsResponseEntry
+                             {
+                                LastModifiedUnixTime = conversations.Conversations[index].LastModifiedUnixTime,
+                                 Id = conversations.Conversations[index].Id,
+                                 Recipient = recipient
+                             }
+                                );
+                        }
+                        catch(ProfileNotFoundException)
+                        {
+                            //Disregard this profile because it is now not existing.
+                        }
                     }
 
 
                     GetConversationsResponse conversationsResponse = new GetConversationsResponse
                     {
-                        Conversations = conversationEntries,
+                        Conversations = conversationEntries.ToArray(),
                         NextUri = nextUri
                     };
 

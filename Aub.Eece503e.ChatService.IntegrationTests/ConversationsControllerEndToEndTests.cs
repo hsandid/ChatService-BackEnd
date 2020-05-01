@@ -187,16 +187,6 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
 
-
-        [Fact]
-        public async Task GetNonExistingMessage()
-        {
-            var message = CreateRandomPostMessageRequest();
-            var conversation = CreateRandomConversation();
-            var e = await Assert.ThrowsAsync<ConversationServiceException>(() => _chatServiceClient.GetMessage(conversation.Id, message.Id));
-            Assert.Equal(HttpStatusCode.NotFound, e.StatusCode);
-        }
-
         [Fact]
         public async Task AddMessageThatAlreadyExists()
         {

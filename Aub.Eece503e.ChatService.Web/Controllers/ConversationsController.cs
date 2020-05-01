@@ -18,45 +18,13 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
     {
         private readonly IConversationsService _conversationsService;
         private readonly ILogger<ConversationsController> _logger;
-        private readonly TelemetryClient _telemetryClient;
 
         public ConversationsController(IConversationsService conversationsService, ILogger<ConversationsController> logger, TelemetryClient telemetryClient)
         {
             _conversationsService = conversationsService;
             _logger = logger;
-            _telemetryClient = telemetryClient;
         }
 
-
-        //This one is not called directly by the user, why not move it completely to the service layer
-        [HttpGet("{conversationId}")]
-        public async Task<IActionResult> GetConversation(string conversationId, string[] participants)
-        {
-           try
-            {
-                var conversation = await _conversationsService.GetConversation(conversationId, participants);
-                return Ok(conversation);
-            }
-            catch (ConversationNotFoundException e)
-            {
-                _logger.LogError(e, $"Conversation {conversationId} was not found in storage");
-                return NotFound($"The conversation with Id {conversationId} was not found");
-            }
-            catch (StorageErrorException e)
-            {
-                _logger.LogError(e, $"Failed to retrieve conversation {conversationId} from storage");
-                return StatusCode(503, "The service is unavailable, please retry in few minutes");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Unknown exception occured while retrieving conversation {conversationId} from storage");
-                return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
-            }
-        }
-
-
-        //We can attempt to handle exceptions thrown at the storage layer here.
-        //We are already catching MessageAlreadyExistsException, why not catch ConversationAlreadyExistsException and address edge cases accordingly ?
         [HttpPost]
         public async Task<IActionResult> PostConversation([FromBody] PostConversationRequest postConversationRequest)
         {
@@ -69,12 +37,20 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 return BadRequest(messageFormatError);
             }
 
-            string conversationId = postConversationRequest.Participants[0] + "_" + postConversationRequest.Participants[1];
+            string conversationId = postConversationRequest.Participants[0];
+            if(String.Compare(postConversationRequest.Participants[0], postConversationRequest.Participants[1]) == -1)
+            {
+                conversationId += $"_{postConversationRequest.Participants[1]}";
+            }
+            else
+            {
+                conversationId = $"{postConversationRequest.Participants[1]}_" + conversationId; 
+            }
 
             try
             {
                 var conversation = await _conversationsService.PostConversation(postConversationRequest, conversationId);
-                return CreatedAtAction(nameof(GetConversation), new { conversationId = conversation.Id }, conversation);
+                return StatusCode(201, conversation);
             }
             catch (StorageErrorException e)
             {
@@ -96,11 +72,6 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 var conversationsResponse = await _conversationsService.GetConversations(username, continuationToken, limit, lastSeenConversationTime);
                 return Ok(conversationsResponse);
             }
-            catch(ProfileNotFoundException e)
-            {
-                _logger.LogError(e, $"One of the recipient in conversations associated to user {username} was not found in storage");
-                return NotFound($"One of the recipient in conversations associated to user {username} was not found in storage");
-            }
             catch (ConversationNotFoundException e)
             {
                 _logger.LogError(e, $"No conversations associated to user {username} were found in storage");
@@ -117,32 +88,6 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
             }
 
-        }
-
-        [HttpGet("{conversationId}/messages/{messageId}")]
-        public async Task<IActionResult> GetMessage(string conversationId, string messageId)
-        {
-            try
-            {
-                var message = await _conversationsService.GetMessage(conversationId,messageId);
-                return Ok(message);
-            }
-            catch (MessageNotFoundException e)
-            {
-                _logger.LogError(e, $"Message {messageId} was not found in storage");
-                return NotFound($"The message with messageId {messageId} was not found");
-            }
-            catch (StorageErrorException e)
-            {
-                _logger.LogError(e, $"Failed to retrieve message {messageId} from storage");
-                return StatusCode(503, "The service is unavailable, please retry in few minutes");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Unknown exception occured while retrieving message {messageId} from storage");
-                return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
-
-            }
         }
 
         [HttpGet("{conversationId}/messages")]
@@ -170,7 +115,6 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             }
         }
 
-        //ADDITIONAL :We should check if the conversation exists here before adding any message
         [HttpPost("{conversationId}/messages")]
         public async Task<IActionResult> PostMessage(string conversationId, [FromBody] PostMessageRequest postMessageRequest)
         {
@@ -181,7 +125,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             try
             {
                 var message = await _conversationsService.PostMessage(conversationId, postMessageRequest);
-                return CreatedAtAction(nameof(GetMessage), new { conversationId = conversationId, messageId = postMessageRequest.Id }, message);
+                return StatusCode(201, message);
             }
             catch (StorageErrorException e)
             {
