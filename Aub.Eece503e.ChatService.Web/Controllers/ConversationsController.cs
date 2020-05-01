@@ -127,6 +127,12 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 var message = await _conversationsService.PostMessage(conversationId, postMessageRequest);
                 return StatusCode(201, message);
             }
+            catch (ConversationNotFoundException e)
+            {
+                _logger.LogError(e, $"Failed to update conversation {conversationId} after adding massage {postMessageRequest.Id}");
+                return StatusCode(404, $"The conversation with conversatioId { conversationId} was not found");
+
+            }
             catch (StorageErrorException e)
             {
                 _logger.LogError(e, $"Failed add message {postMessageRequest.Id} to storage");

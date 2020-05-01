@@ -96,7 +96,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
                     return await GetConversation(conversation.Id, username);
                 }
 
-                throw new StorageErrorException($"Failed to add conversation {conversation.Id} to user {participants[0]}", e);
+                throw new StorageErrorException($"Failed to add conversation {conversation.Id} to user {username}", e);
             }
 
         }
@@ -150,6 +150,35 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
         private Uri CreateDocumentUri(string documentId)
         {
             return UriFactory.CreateDocumentUri(_options.Value.DatabaseName, _options.Value.CollectionName, documentId);
+        }
+
+        public async Task UpdateConversation(string conversationId, long lastModifiedTime)
+        {
+            try
+            {
+                PostConversationResponse conversation = new PostConversationResponse
+                {
+                    Id = conversationId,
+                    CreatedUnixTime = lastModifiedTime
+                };
+                string username1 = conversationId.Substring(0, conversationId.IndexOf('_'));
+                string username2 = conversationId.Substring(conversationId.IndexOf('_') + 1, conversationId.Length - conversationId.IndexOf('_') - 1);
+                string[] participants = { username1, username2 };
+                var entity1 = ToEntity(conversation,participants, username1);
+                var entity2 = ToEntity(conversation, participants, username2);
+                Task task1 = _documentClient.UpsertDocumentAsync(DocumentCollectionUri, entity1);
+                Task task2 = _documentClient.UpsertDocumentAsync(DocumentCollectionUri, entity1);
+                await Task.WhenAll(task1, task2);
+            }
+            catch (DocumentClientException e)
+            {
+                if ((int)e.StatusCode == 404)
+                {
+                    throw new ConversationNotFoundException($"Conversation with conversation Id {conversationId} was not found in storage");
+                }
+
+                throw new StorageErrorException($"Failed to update conversation {conversationId}", e);
+            }
         }
     }
 }

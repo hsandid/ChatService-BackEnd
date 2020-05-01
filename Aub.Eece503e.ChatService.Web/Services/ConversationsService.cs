@@ -40,6 +40,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
                 };
                 var stopWatch = Stopwatch.StartNew();
                 var fetchedMessage = await _messageStore.AddMessage(message, conversationId);
+                await _conversationStore.UpdateConversation(conversationId, message.UnixTime);
                 _telemetryClient.TrackMetric("MessageStore.AddMessage.Time", stopWatch.ElapsedMilliseconds);
                 _telemetryClient.TrackEvent("MessageAdded");
                 return fetchedMessage;

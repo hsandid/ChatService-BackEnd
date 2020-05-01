@@ -7,5 +7,6 @@ namespace Aub.Eece503e.ChatService.Web.Store
 	{
 		Task<PostConversationResponse> AddConversation(PostConversationResponse conversation, string[] participants);
 		Task<ConversationList> GetConversations(string username, string continuationToken, int limit, long lastSeenConversationTime);
+		Task UpdateConversation(string conversationId, long lastModifiedTime);
 	}
 }
