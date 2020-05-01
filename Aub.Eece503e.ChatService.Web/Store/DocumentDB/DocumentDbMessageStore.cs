@@ -80,7 +80,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             }
         }
 
-        public async Task<PostMessageResponse> GetMessage(string conversationId, string messageId)
+        private async Task<PostMessageResponse> GetMessage(string conversationId, string messageId)
         {
             try
             {
@@ -99,7 +99,6 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
                 throw new StorageErrorException($"Failed to retrieve message {messageId} from conversation {conversationId}", e);
             }
         }
-
 
         private static DocumentDbMessageEntity ToEntity(string conversationId, PostMessageResponse message)
         {
