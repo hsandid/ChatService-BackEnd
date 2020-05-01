@@ -24,40 +24,11 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             _documentClient = documentClient;
             _options = options;
         }
-        //public async Task<MessageList> GetMessages(string conversationId, string continuationToken, int limit, long lastSeenMessageTime)
+
+        //public async Task UpdateConversation(PostConversationResponse conversation, string[] participants,  long updatedConversationTime)
         //{
-        //    try
-        //    {
-        //        var feedOptions = new FeedOptions
-        //        {
-        //            MaxItemCount = limit,
-        //            EnableCrossPartitionQuery = false,
-        //            RequestContinuation = continuationToken,
-        //            PartitionKey = new PartitionKey($"m_{conversationId}")
-        //        };
-
-        //        IQueryable<DocumentDbMessageEntity> query = _documentClient.CreateDocumentQuery<DocumentDbMessageEntity>(DocumentCollectionUri, feedOptions)
-        //            .OrderByDescending(entity => entity.UnixTime)
-        //            .Where(entity => entity.UnixTime > lastSeenMessageTime);
-        //        FeedResponse<DocumentDbMessageEntity> feedResponse = await query.AsDocumentQuery().ExecuteNextAsync<DocumentDbMessageEntity>();
-        //        return new MessageList
-        //        {
-        //            ContinuationToken = feedResponse.ResponseContinuation,
-        //            Messages = feedResponse.Select(ToMessagesResponseEntry).ToArray()
-        //        };
-        //    }
-        //    catch (DocumentClientException e)
-        //    {
-        //        if ((int)e.StatusCode == 404)
-        //        {
-        //            throw new ConversationNotFoundException($"ConversationId {conversationId} was not found in storage");
-        //        }
-
-
-        //        throw new StorageErrorException($"Failed to list messages in conversation {conversationId}", e);
-        //    }
+            
         //}
-
         // ADDITIONAL : Concerning the ConversationNotFoundException, should we check if the username exists ? It's fine if there are no conversations associated to the user as we can return
         // an empty array
         public async Task<ConversationList> GetConversations(string username, string continuationToken, int limit, long lastSeenConversationTime)
@@ -118,7 +89,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             {
                 if ((int)e.StatusCode == 409)
                 {
-                    throw new ConversationAlreadyExists($"Conversation {conversation.Id} already exists in storage");
+                    throw new ConversationAlreadyExistsException($"Conversation {conversation.Id} already exists in storage");
                 }
 
                 throw new StorageErrorException($"Failed to add conversation {conversation.Id} to user {participants[0]}", e);
@@ -133,7 +104,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             {
                 if ((int)e.StatusCode == 409)
                 {
-                    throw new ConversationAlreadyExists($"Conversation {conversation.Id} already exists in storage");
+                    throw new ConversationAlreadyExistsException($"Conversation {conversation.Id} already exists in storage");
                 }
 
                 throw new StorageErrorException($"Failed to add conversation {conversation.Id} to user {participants[1]}", e);
@@ -141,11 +112,6 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
 
 
         }
-
-        //Task<ConversationList> GetConversations(string username, string continuationToken, int limit, long lastSeenConversationTime)
-        //{
-
-        //}
 
         //We can use this function to check if a conversation exists in the two partitions associated to each participant
         //We can modify it to do help us address edge cases, like making it throw more specific exceptions which can be addressed on the storage layer

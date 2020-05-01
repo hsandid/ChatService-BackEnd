@@ -1,4 +1,5 @@
 using Aub.Eece503e.ChatService.Web.Store;
+using Aub.Eece503e.ChatService.Web.Services;
 using Aub.Eece503e.ChatService.Web.Store.Azure;
 using Aub.Eece503e.ChatService.Web.Store.DocumentDB;
 using Microsoft.AspNetCore.Builder;
@@ -31,6 +32,7 @@ namespace Aub.Eece503e.ChatService.Web
             services.AddSingleton<IImageStore, AzureBlobContainerImageStore>();
             services.AddSingleton<IMessageStore, DocumentDbMessageStore >();
             services.AddSingleton<IConversationStore, DocumentDbConversationsStore>();
+            services.AddSingleton<IConversationsService, ConversationsService>();
 
             services.AddOptions();
             services.Configure<AzureStorageSettings>(Configuration.GetSection("AzureStorageSettings"));
