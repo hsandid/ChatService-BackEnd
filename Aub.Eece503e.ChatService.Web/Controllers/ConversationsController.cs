@@ -130,7 +130,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             catch (ConversationNotFoundException e)
             {
                 _logger.LogError(e, $"Failed to update conversation {conversationId} after adding massage {postMessageRequest.Id}");
-                return StatusCode(404, $"The conversation with conversatioId { conversationId} was not found");
+                return StatusCode(404, $"The conversation with conversatioId {conversationId} was not found");
 
             }
             catch (StorageErrorException e)

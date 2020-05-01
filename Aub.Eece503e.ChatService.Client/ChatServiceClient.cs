@@ -17,10 +17,6 @@ namespace Aub.Eece503e.ChatService.Client
         {
             _httpClient = httpClient;
         }
-       
-
-        //To-Do
-        //Must add all functions related to conversations
 
         private async Task EnsureSuccessOrThrowImageException(HttpResponseMessage responseMessage)
         {
@@ -155,6 +151,34 @@ namespace Aub.Eece503e.ChatService.Client
             string json = await responseMessage.Content.ReadAsStringAsync();
             var fetchedMessageList = JsonConvert.DeserializeObject<GetMessagesResponse>(json);
             return fetchedMessageList;
+        }
+
+        public async Task<PostConversationResponse> AddConversation(PostConversationRequest conversation)
+        {
+            string json = JsonConvert.SerializeObject(conversation);
+            HttpResponseMessage responseMessage = await _httpClient.PostAsync($"api/conversations", new StringContent(json, Encoding.UTF8,
+                "application/json"));
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string responseJson = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedConversation = JsonConvert.DeserializeObject<PostConversationResponse>(responseJson);
+            return fetchedConversation;
+        }
+
+        public async Task<GetConversationsResponse> GetConversationList(string uri)
+        {
+            var responseConversations = await _httpClient.GetAsync(uri);
+            await EnsureSuccessOrThrowConversationsException(responseConversations);
+            string json = await responseConversations.Content.ReadAsStringAsync();
+            var fetchedConversationsList = JsonConvert.DeserializeObject<GetConversationsResponse>(json);
+            return fetchedConversationsList;
+        }
+        public async Task<GetConversationsResponse> GetConversationList(string username, int limit, long lastSeenConversationsTime)
+        {
+            var responseMessage = await _httpClient.GetAsync($"api/conversations?username={username}&limit={limit}&lastSeenConversationTime={lastSeenConversationsTime}");
+            await EnsureSuccessOrThrowConversationsException(responseMessage);
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            var fetchedConversationsList = JsonConvert.DeserializeObject<GetConversationsResponse>(json);
+            return fetchedConversationsList;
         }
     }
 }

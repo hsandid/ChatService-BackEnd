@@ -16,11 +16,6 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
     {
         private readonly IChatServiceClient _chatServiceClient;
-        private readonly Random _rand = new Random();
-        private readonly ConcurrentBag<UploadImageResponse> _messagesToCleanup = new ConcurrentBag<UploadImageResponse>();
-
-        // To-Do 
-        // Add integration tests for the conversation API calls
 
         public ConversationsControllerEndToEndTests(IEndToEndTestsFixture fixture)
         {
@@ -70,15 +65,14 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return profile;
         }
 
-        private GetConversationsResponseEntry CreateRandomConversation()
+        private PostConversationRequest CreateRandomPostConversationRequest()
         {
 
-            string id = CreateRandomString();
-            var conversation = new GetConversationsResponseEntry
+            string[] participants = { CreateRandomString(), CreateRandomString() };
+            var conversation = new PostConversationRequest
             {
-                Id = id,
-                LastModifiedUnixTime = 001,
-                Recipient = CreateRandomProfile()
+                Participants = participants,
+                FirstMessage = CreateRandomPostMessageRequest()
             };
             return conversation;
         }
@@ -86,9 +80,10 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [Fact]
         public async Task PostGetMessage()
         {
+            var conversation = CreateRandomPostConversationRequest();
             var message = CreateRandomPostMessageRequest();
-            var conversation = CreateRandomConversation();
-            var fetchedMessage = await _chatServiceClient.AddMessage(conversation.Id,message);
+            var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
+            var fetchedMessage = await _chatServiceClient.AddMessage(fetchedConversation.Id,message);
             Assert.Equal(message.Id, fetchedMessage.Id);
         }
 
@@ -100,7 +95,8 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         public async Task PostGetMessageListAssertLimitTest(int paginationLimit)
         {
             PostMessageRequest[] messageArray = new PostMessageRequest[10];
-            var conversation = CreateRandomConversation();
+            var conversation = CreateRandomPostConversationRequest();
+            var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
 
             for (int index = 0; index < 10; index++)
             {
@@ -109,11 +105,11 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
             for(int index = 0; index < 10; index++)
             {
-                await _chatServiceClient.AddMessage(conversation.Id, messageArray[index]);
+                await _chatServiceClient.AddMessage(fetchedConversation.Id, messageArray[index]);
             }
 
 
-            GetMessagesResponse fetchedMessageList = await _chatServiceClient.GetMessageList(conversation.Id, paginationLimit, 0);
+            GetMessagesResponse fetchedMessageList = await _chatServiceClient.GetMessageList(fetchedConversation.Id, paginationLimit, 0);
             int countMessagesInFetchedList = fetchedMessageList.Messages.Length;
 
             Assert.Equal(paginationLimit, countMessagesInFetchedList);
@@ -122,15 +118,16 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [Fact]
         public async Task PostGetMessageListContinuationTokenTest()
         {
-            string conversationId = CreateRandomString();
+            var conversation = CreateRandomPostConversationRequest();
+            var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
             PostMessageResponse[] sentMessageList = new PostMessageResponse[6];
 
             for (int messageCount = 0; messageCount < 6; messageCount++)
             {
-                sentMessageList[messageCount] = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
+                sentMessageList[messageCount] = await _chatServiceClient.AddMessage(fetchedConversation.Id, CreateRandomPostMessageRequest());
             }
 
-            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(conversationId, 3, sentMessageList[0].UnixTime);
+            GetMessagesResponse fetchedMessageList1 = await _chatServiceClient.GetMessageList(fetchedConversation.Id, 3, sentMessageList[0].UnixTime);
             Assert.Equal(3, fetchedMessageList1.Messages.Count());
             Assert.Equal(fetchedMessageList1.Messages.ElementAt(0).Text, sentMessageList[5].Text);
             Assert.Equal(fetchedMessageList1.Messages.ElementAt(1).Text, sentMessageList[4].Text);
@@ -153,15 +150,16 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [InlineData(10)]
         public async Task PostGetMessageListLastSeenMessageTimeTest(int indexOfLastSeenMessage)
         {
-            string conversationId = CreateRandomString();
+            var conversation = CreateRandomPostConversationRequest();
+            var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
             PostMessageResponse[] sentMessageList = new PostMessageResponse[11];
 
             for(int messageCount = 0; messageCount<11; messageCount++)
             {
-                sentMessageList[messageCount] = await _chatServiceClient.AddMessage(conversationId, CreateRandomPostMessageRequest());
+                sentMessageList[messageCount] = await _chatServiceClient.AddMessage(fetchedConversation.Id, CreateRandomPostMessageRequest());
             }
            
-            GetMessagesResponse fetchedMessageList = await _chatServiceClient.GetMessageList(conversationId, 30, sentMessageList[indexOfLastSeenMessage].UnixTime);
+            GetMessagesResponse fetchedMessageList = await _chatServiceClient.GetMessageList(fetchedConversation.Id, 30, sentMessageList[indexOfLastSeenMessage].UnixTime);
             int numberOfMessagesfetched = 10 - indexOfLastSeenMessage;
             Assert.Equal(numberOfMessagesfetched, fetchedMessageList.Messages.Count());
             Assert.Empty(fetchedMessageList.NextUri);
@@ -176,26 +174,44 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [InlineData("fMax", "Joe", "")]
         public async Task PostInvalidMessage(string id, string text, string senderUsername)
         {
-            var conversation = CreateRandomConversation();
+            var conversation = CreateRandomPostConversationRequest();
+            var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
             var message = new PostMessageRequest
             {
                 Id = id,
                 Text = text,
                 SenderUsername = senderUsername
             };
-            var e = await Assert.ThrowsAsync<ConversationServiceException>(() => _chatServiceClient.AddMessage(conversation.Id, message));
+            var e = await Assert.ThrowsAsync<ConversationServiceException>(() => _chatServiceClient.AddMessage(fetchedConversation.Id, message));
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
 
         [Fact]
         public async Task AddMessageThatAlreadyExists()
         {
-            var message1 = CreateRandomPostMessageRequest();
-            var conversation = CreateRandomConversation();
-            var fetchedMessage1 = await _chatServiceClient.AddMessage(conversation.Id, message1);
-            var fetchedMessage2 = await _chatServiceClient.AddMessage(conversation.Id, message1);
+            var conversation = CreateRandomPostConversationRequest();
+            var message = CreateRandomPostMessageRequest();
+            var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
+            var fetchedMessage1 = await _chatServiceClient.AddMessage(fetchedConversation.Id, message);
+            var fetchedMessage2 = await _chatServiceClient.AddMessage(fetchedConversation.Id, message);
             Assert.Equal(fetchedMessage1.Id, fetchedMessage2.Id);
         }
 
+        [Fact]
+        public async Task PostGetConversation()
+        {
+            var conversation = CreateRandomPostConversationRequest();
+            var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
+            Assert.Equal(fetchedConversation.Id, ParticipantsToId(conversation.Participants));
+        }
+
+        private string ParticipantsToId(string[] participants)
+        {
+            if(String.Compare(participants[0], participants[1]) == -1)
+            {
+                return $"{participants[0]}_{participants[1]}";
+            }
+            return $"{participants[1]}_{participants[0]}";
+        }
     }
 }
