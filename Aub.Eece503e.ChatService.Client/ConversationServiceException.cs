@@ -3,9 +3,9 @@ using System.Net;
 
 namespace Aub.Eece503e.ChatService.Client
 {
-    public class ChatServiceException : Exception
+    public class ConversationServiceException : Exception
     {
-        public ChatServiceException(string message, System.Net.HttpStatusCode statusCode) : base(message)
+        public ConversationServiceException(string message, System.Net.HttpStatusCode statusCode) : base(message)
         {
             StatusCode = statusCode;
         }

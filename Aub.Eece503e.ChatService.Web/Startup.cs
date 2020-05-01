@@ -34,6 +34,7 @@ namespace Aub.Eece503e.ChatService.Web
             services.AddSingleton<IConversationStore, DocumentDbConversationsStore>();
             services.AddSingleton<IConversationsService, ConversationsService>();
 
+
             services.AddOptions();
             services.Configure<AzureStorageSettings>(Configuration.GetSection("AzureStorageSettings"));
 

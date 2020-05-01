@@ -27,6 +27,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             _telemetryClient = telemetryClient;
         }
 
+
         //This one is not called directly by the user, why not move it completely to the service layer
         [HttpGet("{conversationId}")]
         public async Task<IActionResult> GetConversation(string conversationId, string[] participants)
@@ -52,6 +53,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                 return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
             }
         }
+
 
         //We can attempt to handle exceptions thrown at the storage layer here.
         //We are already catching MessageAlreadyExistsException, why not catch ConversationAlreadyExistsException and address edge cases accordingly ?
@@ -139,6 +141,7 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
             {
                 _logger.LogError(e, $"Unknown exception occured while retrieving message {messageId} from storage");
                 return StatusCode(500, "An internal server error occured, please reachout to support if this error persists");
+
             }
         }
 

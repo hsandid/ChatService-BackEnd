@@ -17,6 +17,10 @@ namespace Aub.Eece503e.ChatService.Client
         {
             _httpClient = httpClient;
         }
+       
+
+        //To-Do
+        //Must add all functions related to conversations
 
         private async Task EnsureSuccessOrThrowImageException(HttpResponseMessage responseMessage)
         {
@@ -41,7 +45,7 @@ namespace Aub.Eece503e.ChatService.Client
             if (!responseMessage.IsSuccessStatusCode)
             {
                 string message = $"{responseMessage.ReasonPhrase}, {await responseMessage.Content.ReadAsStringAsync()}";
-                throw new ChatServiceException(message, responseMessage.StatusCode);
+                throw new ConversationServiceException(message, responseMessage.StatusCode);
             }
         }
 

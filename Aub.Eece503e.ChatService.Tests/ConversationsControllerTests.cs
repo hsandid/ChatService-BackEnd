@@ -28,6 +28,7 @@ namespace Aub.Eece503e.ChatService.Tests
             SenderUsername = "JohnSmith"
         };
 
+
         private static PostMessageResponse _testMessage = new PostMessageResponse
         {
             Id = "001",
