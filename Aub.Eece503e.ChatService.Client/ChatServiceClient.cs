@@ -174,9 +174,9 @@ namespace Aub.Eece503e.ChatService.Client
         }
         public async Task<GetConversationsResponse> GetConversationList(string username, int limit, long lastSeenConversationsTime)
         {
-            var responseMessage = await _httpClient.GetAsync($"api/conversations?username={username}&limit={limit}&lastSeenConversationTime={lastSeenConversationsTime}");
-            await EnsureSuccessOrThrowConversationsException(responseMessage);
-            string json = await responseMessage.Content.ReadAsStringAsync();
+            var responseConversations = await _httpClient.GetAsync($"api/conversations?username={username}&limit={limit}&lastSeenConversationTime={lastSeenConversationsTime}");
+            await EnsureSuccessOrThrowConversationsException(responseConversations);
+            string json = await responseConversations.Content.ReadAsStringAsync();
             var fetchedConversationsList = JsonConvert.DeserializeObject<GetConversationsResponse>(json);
             return fetchedConversationsList;
         }

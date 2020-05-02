@@ -167,7 +167,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
                 var entity1 = ToEntity(conversation,participants, username1);
                 var entity2 = ToEntity(conversation, participants, username2);
                 Task task1 = _documentClient.UpsertDocumentAsync(DocumentCollectionUri, entity1);
-                Task task2 = _documentClient.UpsertDocumentAsync(DocumentCollectionUri, entity1);
+                Task task2 = _documentClient.UpsertDocumentAsync(DocumentCollectionUri, entity2);
                 await Task.WhenAll(task1, task2);
             }
             catch (DocumentClientException e)

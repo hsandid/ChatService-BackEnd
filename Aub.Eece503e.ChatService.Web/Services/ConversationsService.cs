@@ -40,7 +40,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
                 };
                 var stopWatch = Stopwatch.StartNew();
                 var fetchedMessage = await _messageStore.AddMessage(message, conversationId);
-                await _conversationStore.UpdateConversation(conversationId, message.UnixTime);
+                await _conversationStore.UpdateConversation(conversationId, fetchedMessage.UnixTime);
                 _telemetryClient.TrackMetric("MessageStore.AddMessage.Time", stopWatch.ElapsedMilliseconds);
                 _telemetryClient.TrackEvent("MessageAdded");
                 return fetchedMessage;
@@ -88,7 +88,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
                     CreatedUnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                 };
                 var stopWatch = Stopwatch.StartNew();
-                await _messageStore.AddMessage(message, conversationId);
+                 await _messageStore.AddMessage(message, conversationId);
                 var fetchedConversation = await _conversationStore.AddConversation(conversation, postConversationRequest.Participants);
                 _telemetryClient.TrackMetric("ConversationStore.AddConversation.Time", stopWatch.ElapsedMilliseconds);
                 _telemetryClient.TrackEvent("ConversationAdded");
@@ -105,7 +105,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
                     string nextUri = "";
                     if (!string.IsNullOrWhiteSpace(conversations.ContinuationToken))
                     {
-                        nextUri = $"api/conversations?username={username}&continuationToken={WebUtility.UrlEncode(conversations.ContinuationToken)}&limit={limit}&lastSeenMessageTime={lastSeenConversationTime}";
+                        nextUri = $"api/conversations?username={username}&continuationToken={WebUtility.UrlEncode(conversations.ContinuationToken)}&limit={limit}&lastSeenConversationTime={lastSeenConversationTime}";
                     }
 
                     string recipientUsername;

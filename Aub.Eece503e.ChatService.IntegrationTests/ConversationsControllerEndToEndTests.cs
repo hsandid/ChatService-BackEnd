@@ -52,6 +52,20 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return message;
         }
 
+        private PostMessageRequest CreateRandomPostMessageRequestWithUsername(string senderUsername)
+        {
+
+            string id = CreateRandomString();
+            string text = CreateRandomString();
+            var message = new PostMessageRequest
+            {
+                Id = id,
+                Text = text,
+                SenderUsername = senderUsername
+            };
+            return message;
+        }
+
         private Profile CreateRandomProfile()
         {
             string username = CreateRandomString();
@@ -73,6 +87,30 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             {
                 Participants = participants,
                 FirstMessage = CreateRandomPostMessageRequest()
+            };
+            return conversation;
+        }
+
+        private PostConversationRequest CreateRandomPostConversationRequestWithUsername(string username1, string usernam2)
+        {
+
+            string[] participants = { username1, usernam2};
+            var conversation = new PostConversationRequest
+            {
+                Participants = participants,
+                FirstMessage = CreateRandomPostMessageRequestWithUsername(username1)
+            };
+            return conversation;
+        }
+
+        private PostConversationRequest CreateRandomPostConversationRequestWithMessage(PostMessageRequest message)
+        {
+
+            string[] participants = { CreateRandomString(), CreateRandomString() };
+            var conversation = new PostConversationRequest
+            {
+                Participants = participants,
+                FirstMessage = message
             };
             return conversation;
         }
@@ -203,6 +241,130 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             var conversation = CreateRandomPostConversationRequest();
             var fetchedConversation = await _chatServiceClient.AddConversation(conversation);
             Assert.Equal(fetchedConversation.Id, ParticipantsToId(conversation.Participants));
+        }
+
+        [Fact]
+        public async Task AddAConversationThatAlreadyExists()
+        {
+            var conversation = CreateRandomPostConversationRequest();
+            var fetchedConversation1 = await _chatServiceClient.AddConversation(conversation);
+            var fetchedConversation2 = await _chatServiceClient.AddConversation(conversation);
+            Assert.Equal(fetchedConversation1.Id, fetchedConversation2.Id);
+        }
+
+        [Theory]
+        [InlineData(null, "Joe", "Daniels")]
+        [InlineData("fMax", null, "Daniels")]
+        [InlineData("fMax", "Joe", null)]
+        [InlineData("", "Joe", "Daniels")]
+        [InlineData("fMax", "", "Daniels")]
+        [InlineData("fMax", "Joe", "")]
+        public async Task PostInvalidFisrtMessageWithConversation(string id, string text, string senderUsername)
+        { 
+            var message = new PostMessageRequest
+            {
+                Id = id,
+                Text = text,
+                SenderUsername = senderUsername
+            };
+            var conversation = CreateRandomPostConversationRequestWithMessage(message);
+            var e = await Assert.ThrowsAsync<ConversationServiceException>(() => _chatServiceClient.AddConversation(conversation));
+            Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
+        }
+
+        [Theory]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        [InlineData(8)]
+        public async Task PostGetConversationListAssertLimitTest(int paginationLimit)
+        {
+            Profile profile1 = CreateRandomProfile();
+            await _chatServiceClient.AddProfile(profile1);
+            PostConversationRequest[] conversationsarray = new PostConversationRequest[10];
+
+            for (int index = 0; index < 10; index++)
+            {
+
+                Profile profile2 = CreateRandomProfile();
+                await _chatServiceClient.AddProfile(profile2);
+                conversationsarray[index] = CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username);
+            }
+
+            for (int index = 0; index < 10; index++)
+            {
+                await _chatServiceClient.AddConversation(conversationsarray[index]);
+            }
+
+            GetConversationsResponse fetchedConversationList = await _chatServiceClient.GetConversationList(profile1.Username, paginationLimit, 0);
+            int countConversationsInFetchedList = fetchedConversationList.Conversations.Length;
+
+            Assert.Equal(paginationLimit, countConversationsInFetchedList);
+        }
+
+        [Fact]
+        public async Task PostGetConversationListContinuationTokenTest()
+        {
+            Profile profile1 = CreateRandomProfile();
+            await _chatServiceClient.AddProfile(profile1);
+            PostConversationResponse[] sentConversationsArray = new PostConversationResponse[6];
+
+            for (int index = 0; index < 6; index++)
+            {
+
+                Profile profile2 = CreateRandomProfile();
+                await _chatServiceClient.AddProfile(profile2);
+                sentConversationsArray[index] = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username));
+            }
+
+            GetConversationsResponse fetchedConversationList1 = await _chatServiceClient.GetConversationList(profile1.Username, 3, sentConversationsArray[0].CreatedUnixTime);
+            Assert.Equal(3, fetchedConversationList1.Conversations.Length);
+            Assert.NotEmpty(fetchedConversationList1.NextUri);
+
+            GetConversationsResponse fetchedConversationList2 = await _chatServiceClient.GetConversationList(fetchedConversationList1.NextUri);
+            Assert.Equal(2, fetchedConversationList2.Conversations.Length);
+            Assert.Empty(fetchedConversationList2.NextUri);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        [InlineData(4)]
+        [InlineData(6)]
+        [InlineData(8)]
+        [InlineData(10)]
+        public async Task PostGetConversationListLastSeenConversationTimeTest(int indexOfLastSeenConversation)
+        {
+            Profile profile1 = CreateRandomProfile();
+            await _chatServiceClient.AddProfile(profile1);
+            PostConversationResponse[] sentConversationsArray = new PostConversationResponse[11];
+
+            for (int index = 0; index < 11; index++)
+            {
+
+                Profile profile2 = CreateRandomProfile();
+                await _chatServiceClient.AddProfile(profile2);
+                sentConversationsArray[index] = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username));
+            }
+
+            GetConversationsResponse fetchedConversationList = await _chatServiceClient.GetConversationList(profile1.Username, 30, sentConversationsArray[indexOfLastSeenConversation].CreatedUnixTime);
+            int numberOfMessagesfetched = 10 - indexOfLastSeenConversation;
+            Assert.Equal(numberOfMessagesfetched, fetchedConversationList.Conversations.Length);
+            Assert.Empty(fetchedConversationList.NextUri);
+        }
+
+        [Fact]
+        public async Task UpdateConversationTimeTest()
+        {
+            Profile profile1 = CreateRandomProfile();
+            await _chatServiceClient.AddProfile(profile1);
+            Profile profile2 = CreateRandomProfile();
+            await _chatServiceClient.AddProfile(profile2);
+            var originalConversation = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username));
+            var message = await _chatServiceClient.AddMessage(originalConversation.Id,CreateRandomPostMessageRequestWithUsername(profile1.Username));
+            var conversations = await _chatServiceClient.GetConversationList(profile1.Username, 10, 0);
+            Assert.Single(conversations.Conversations);
+            Assert.Equal(conversations.Conversations[0].LastModifiedUnixTime, message.UnixTime);
         }
 
         private string ParticipantsToId(string[] participants)
