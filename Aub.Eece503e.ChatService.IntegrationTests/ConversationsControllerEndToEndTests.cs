@@ -131,6 +131,16 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return conversation;
         }
 
+        public PostConversationRequest CreateRandomPostConversationRequestWithMessage(PostMessageRequest message, string[] participants)
+        {
+            var conversation = new PostConversationRequest
+            {
+                Participants = participants,
+                FirstMessage = message
+            };
+            return conversation;
+        }
+
         [Fact]
         public async Task PostGetMessage()
         {

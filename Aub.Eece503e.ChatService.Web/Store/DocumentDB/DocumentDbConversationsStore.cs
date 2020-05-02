@@ -81,7 +81,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             return task1.Result.CreatedUnixTime <= task2.Result.CreatedUnixTime ? task1.Result : task2.Result;
         }
 
-        private async Task<PostConversationResponse> AddConversationToPartition(PostConversationResponse conversation, string[] participants, string username)
+        public async Task<PostConversationResponse> AddConversationToPartition(PostConversationResponse conversation, string[] participants, string username)
         {
             try
             {

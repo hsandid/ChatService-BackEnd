@@ -15,9 +15,11 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             var httpClient = testServer.CreateClient();
             ChatServiceClient = new ChatServiceClient(httpClient);
             MessageStore = testServer.Host.Services.GetRequiredService<IMessageStore>();
+            ConversationStore = testServer.Host.Services.GetRequiredService<IConversationStore>();
         }
 
         public IChatServiceClient ChatServiceClient { get; }
         public IMessageStore MessageStore { get; }
+        public IConversationStore ConversationStore { get; }
     }
 }

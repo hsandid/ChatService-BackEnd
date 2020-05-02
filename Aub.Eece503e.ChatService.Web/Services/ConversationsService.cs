@@ -29,7 +29,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
         }
         public async Task<PostMessageResponse> PostMessage(string conversationId, PostMessageRequest postMessageRequest)
         {
-            using (_logger.BeginScope("{Message_ID}", postMessageRequest.Id))
+            using (_logger.BeginScope("{MessageId}", postMessageRequest.Id))
             {
                 PostMessageResponse message = new PostMessageResponse
                 {
@@ -48,7 +48,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
         }
         public async Task<GetMessagesResponse> GetMessageList(string conversationId, string continuationToken, int limit, long lastSeenMessageTime)
         {
-            using (_logger.BeginScope("{ConversationID}", conversationId))
+            using (_logger.BeginScope("{ConversationId}", conversationId))
             {
                 var stopWatch = Stopwatch.StartNew();
                 MessageList messages = await _messageStore.GetMessages(conversationId, continuationToken, limit, lastSeenMessageTime);
@@ -72,7 +72,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
 
         public async Task<PostConversationResponse> PostConversation(PostConversationRequest postConversationRequest,string conversationId)
         {
-            using (_logger.BeginScope("{ConversationID}", conversationId))
+            using (_logger.BeginScope("{ConversationId}", conversationId))
             {
                 PostMessageResponse message = new PostMessageResponse
                 {
