@@ -69,9 +69,9 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
         
         public async Task<PostConversationResponse> AddConversation(PostConversationResponse conversation, string[] participants)
         {
-                Task<PostConversationResponse> task1 = AddConversationToPartition(conversation, participants, participants[0]);
-                Task<PostConversationResponse> task2 = AddConversationToPartition(conversation, participants, participants[1]);
-                await Task.WhenAll(task1, task2);
+            Task<PostConversationResponse> task1 = AddConversationToPartition(conversation, participants, participants[0]);
+            Task<PostConversationResponse> task2 = AddConversationToPartition(conversation, participants, participants[1]);
+            await Task.WhenAll(task1, task2);
 
             //Here we have the choice to return task1.Result or task2.Result.
             //In most cases, it won't matter.

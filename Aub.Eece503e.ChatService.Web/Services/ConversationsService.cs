@@ -88,7 +88,7 @@ namespace Aub.Eece503e.ChatService.Web.Services
                     CreatedUnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                 };
                 var stopWatch = Stopwatch.StartNew();
-                 await _messageStore.AddMessage(message, conversationId);
+                await _messageStore.AddMessage(message, conversationId);
                 var fetchedConversation = await _conversationStore.AddConversation(conversation, postConversationRequest.Participants);
                 _telemetryClient.TrackMetric("ConversationStore.AddConversation.Time", stopWatch.ElapsedMilliseconds);
                 _telemetryClient.TrackEvent("ConversationAdded");

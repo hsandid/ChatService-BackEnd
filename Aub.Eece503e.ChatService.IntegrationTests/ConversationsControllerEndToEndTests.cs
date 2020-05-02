@@ -12,10 +12,10 @@ using Xunit;
 
 namespace Aub.Eece503e.ChatService.IntegrationTests
 {
-    public  abstract class ConversationsControllerEndToEndTests<TFixture> : IClassFixture<TFixture>, IAsyncLifetime where TFixture : class, IEndToEndTestsFixture
+    public abstract class ConversationsControllerEndToEndTests<TFixture> : IClassFixture<TFixture>, IAsyncLifetime where TFixture : class, IEndToEndTestsFixture
 
     {
-        private readonly IChatServiceClient _chatServiceClient;
+        public readonly IChatServiceClient _chatServiceClient;
 
         public ConversationsControllerEndToEndTests(IEndToEndTestsFixture fixture)
         {
@@ -32,12 +32,12 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             await Task.CompletedTask;
         }
 
-        private static string CreateRandomString()
+        public static string CreateRandomString()
         {
             return Guid.NewGuid().ToString();
         }
 
-        private PostMessageRequest CreateRandomPostMessageRequest()
+        public PostMessageRequest CreateRandomPostMessageRequest()
         {
 
             string id = CreateRandomString();
@@ -52,7 +52,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return message;
         }
 
-        private PostMessageRequest CreateRandomPostMessageRequestWithUsername(string senderUsername)
+        public PostMessageRequest CreateRandomPostMessageRequestWithUsername(string senderUsername)
         {
 
             string id = CreateRandomString();
@@ -66,7 +66,23 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return message;
         }
 
-        private Profile CreateRandomProfile()
+        public PostMessageResponse CreateRandomPostMessageResponseWithUsername(string senderUsername)
+        {
+
+            string id = CreateRandomString();
+            string text = CreateRandomString();
+            var message = new PostMessageResponse
+            {
+                Id = id,
+                Text = text,
+                SenderUsername = senderUsername,
+                UnixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            };
+            return message;
+        }
+
+
+        public Profile CreateRandomProfile()
         {
             string username = CreateRandomString();
             string firstname = CreateRandomString();
@@ -79,7 +95,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return profile;
         }
 
-        private PostConversationRequest CreateRandomPostConversationRequest()
+        public PostConversationRequest CreateRandomPostConversationRequest()
         {
 
             string[] participants = { CreateRandomString(), CreateRandomString() };
@@ -91,7 +107,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return conversation;
         }
 
-        private PostConversationRequest CreateRandomPostConversationRequestWithUsername(string username1, string usernam2)
+        public PostConversationRequest CreateRandomPostConversationRequestWithUsername(string username1, string usernam2)
         {
 
             string[] participants = { username1, usernam2};
@@ -103,7 +119,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return conversation;
         }
 
-        private PostConversationRequest CreateRandomPostConversationRequestWithMessage(PostMessageRequest message)
+        public PostConversationRequest CreateRandomPostConversationRequestWithMessage(PostMessageRequest message)
         {
 
             string[] participants = { CreateRandomString(), CreateRandomString() };
@@ -367,7 +383,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             Assert.Equal(conversations.Conversations[0].LastModifiedUnixTime, message.UnixTime);
         }
 
-        private string ParticipantsToId(string[] participants)
+        public string ParticipantsToId(string[] participants)
         {
             if(String.Compare(participants[0], participants[1]) == -1)
             {
