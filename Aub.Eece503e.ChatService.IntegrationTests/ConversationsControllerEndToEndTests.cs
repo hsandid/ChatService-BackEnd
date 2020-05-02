@@ -52,7 +52,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return message;
         }
 
-        public PostMessageRequest CreateRandomPostMessageRequestWithUsername(string senderUsername)
+        public PostMessageRequest CreateRandomPostMessageRequest(string senderUsername)
         {
 
             string id = CreateRandomString();
@@ -66,7 +66,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return message;
         }
 
-        public PostMessageResponse CreateRandomPostMessageResponseWithUsername(string senderUsername)
+        public PostMessageResponse CreateRandomPostMessageResponse(string senderUsername)
         {
 
             string id = CreateRandomString();
@@ -107,19 +107,19 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return conversation;
         }
 
-        public PostConversationRequest CreateRandomPostConversationRequestWithUsername(string username1, string usernam2)
+        public PostConversationRequest CreateRandomPostConversationRequest(string username1, string username2)
         {
 
-            string[] participants = { username1, usernam2};
+            string[] participants = { username1, username2};
             var conversation = new PostConversationRequest
             {
                 Participants = participants,
-                FirstMessage = CreateRandomPostMessageRequestWithUsername(username1)
+                FirstMessage = CreateRandomPostMessageRequest(username1)
             };
             return conversation;
         }
 
-        public PostConversationRequest CreateRandomPostConversationRequestWithMessage(PostMessageRequest message)
+        public PostConversationRequest CreateRandomPostConversationRequest(PostMessageRequest message)
         {
 
             string[] participants = { CreateRandomString(), CreateRandomString() };
@@ -131,7 +131,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             return conversation;
         }
 
-        public PostConversationRequest CreateRandomPostConversationRequestWithMessage(PostMessageRequest message, string[] participants)
+        public PostConversationRequest CreateRandomPostConversationRequest(PostMessageRequest message, string[] participants)
         {
             var conversation = new PostConversationRequest
             {
@@ -293,7 +293,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
                 Text = text,
                 SenderUsername = senderUsername
             };
-            var conversation = CreateRandomPostConversationRequestWithMessage(message);
+            var conversation = CreateRandomPostConversationRequest(message);
             var e = await Assert.ThrowsAsync<ConversationServiceException>(() => _chatServiceClient.AddConversation(conversation));
             Assert.Equal(HttpStatusCode.BadRequest, e.StatusCode);
         }
@@ -314,7 +314,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
                 Profile profile2 = CreateRandomProfile();
                 await _chatServiceClient.AddProfile(profile2);
-                conversationsarray[index] = CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username);
+                conversationsarray[index] = CreateRandomPostConversationRequest(profile1.Username, profile2.Username);
             }
 
             for (int index = 0; index < 10; index++)
@@ -340,7 +340,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
                 Profile profile2 = CreateRandomProfile();
                 await _chatServiceClient.AddProfile(profile2);
-                sentConversationsArray[index] = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username));
+                sentConversationsArray[index] = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequest(profile1.Username, profile2.Username));
             }
 
             GetConversationsResponse fetchedConversationList1 = await _chatServiceClient.GetConversationList(profile1.Username, 3, sentConversationsArray[0].CreatedUnixTime);
@@ -370,7 +370,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
 
                 Profile profile2 = CreateRandomProfile();
                 await _chatServiceClient.AddProfile(profile2);
-                sentConversationsArray[index] = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username));
+                sentConversationsArray[index] = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequest(profile1.Username, profile2.Username));
             }
 
             GetConversationsResponse fetchedConversationList = await _chatServiceClient.GetConversationList(profile1.Username, 30, sentConversationsArray[indexOfLastSeenConversation].CreatedUnixTime);
@@ -386,8 +386,8 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
             await _chatServiceClient.AddProfile(profile1);
             Profile profile2 = CreateRandomProfile();
             await _chatServiceClient.AddProfile(profile2);
-            var originalConversation = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequestWithUsername(profile1.Username, profile2.Username));
-            var message = await _chatServiceClient.AddMessage(originalConversation.Id,CreateRandomPostMessageRequestWithUsername(profile1.Username));
+            var originalConversation = await _chatServiceClient.AddConversation(CreateRandomPostConversationRequest(profile1.Username, profile2.Username));
+            var message = await _chatServiceClient.AddMessage(originalConversation.Id,CreateRandomPostMessageRequest(profile1.Username));
             var conversations = await _chatServiceClient.GetConversationList(profile1.Username, 10, 0);
             Assert.Single(conversations.Conversations);
             Assert.Equal(conversations.Conversations[0].LastModifiedUnixTime, message.UnixTime);

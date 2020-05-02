@@ -17,14 +17,14 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         }
 
         [Fact]
-        public async Task PostConversationFirstEdgeCase()
+        public async Task PostConversationEdgeCaseFailedtoAddToBothPartitions()
         {
             Profile profile1 = CreateRandomProfile();
             await _chatServiceClient.AddProfile(profile1);
             Profile profile2 = CreateRandomProfile();
             await _chatServiceClient.AddProfile(profile2);
             
-            var messageResponse = CreateRandomPostMessageResponseWithUsername(profile1.Username);
+            var messageResponse = CreateRandomPostMessageResponse(profile1.Username);
             string[] participants = { profile1.Username, profile2.Username };
             string conversationId = ParticipantsToId(participants);
             await _messageStore.AddMessage(messageResponse, conversationId);
@@ -34,7 +34,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
                 Text = messageResponse.Text,
                 SenderUsername = profile1.Username
             };
-            var conversationRequest = CreateRandomPostConversationRequestWithMessage(messageRequest, participants);
+            var conversationRequest = CreateRandomPostConversationRequest(messageRequest, participants);
             var fetchedConversation = await _chatServiceClient.AddConversation(conversationRequest);
             Assert.Equal(fetchedConversation.Id, conversationId);
         }
@@ -42,14 +42,14 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
-        public async Task PostConversationSecondEdgeCase(int participantIndex)
+        public async Task PostConversationEdgeCaseFailedToAddToOnePartition(int participantIndex)
         {
             Profile profile1 = CreateRandomProfile();
             await _chatServiceClient.AddProfile(profile1);
             Profile profile2 = CreateRandomProfile();
             await _chatServiceClient.AddProfile(profile2);
 
-            var messageResponse = CreateRandomPostMessageResponseWithUsername(profile1.Username);
+            var messageResponse = CreateRandomPostMessageResponse(profile1.Username);
             string[] participants = { profile1.Username, profile2.Username };
             string conversationId = ParticipantsToId(participants);
             await _messageStore.AddMessage(messageResponse, conversationId);
@@ -59,7 +59,7 @@ namespace Aub.Eece503e.ChatService.IntegrationTests
                 Text = messageResponse.Text,
                 SenderUsername = profile1.Username
             };
-            var conversationRequest = CreateRandomPostConversationRequestWithMessage(messageRequest, participants);
+            var conversationRequest = CreateRandomPostConversationRequest(messageRequest, participants);
             var conversationResponse = new PostConversationResponse
             {
                 Id = conversationId,
