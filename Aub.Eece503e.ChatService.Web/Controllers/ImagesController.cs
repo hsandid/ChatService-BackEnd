@@ -53,7 +53,6 @@ namespace Aub.Eece503e.ChatService.Web.Controllers
                     });
                     
                 }
-                
             }
             catch (StorageErrorException e)
             {

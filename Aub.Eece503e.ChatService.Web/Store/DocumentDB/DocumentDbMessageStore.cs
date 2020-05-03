@@ -25,18 +25,20 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             _options = options;
         }
 
-        public async Task AddMessage(Message message, string conversationId)
+        public async Task<PostMessageResponse> AddMessage(PostMessageResponse message, string conversationId)
         {
             try
             {
                 var entity = ToEntity(conversationId, message);
                 await _documentClient.CreateDocumentAsync(DocumentCollectionUri, entity);
+                return message;
             }
             catch (DocumentClientException e)
             {
                 if((int)e.StatusCode == 409)
                 {
-                    throw new MessageAlreadyExistsException($"Message {message.Id} already exists in storage");
+                    var originalMessage = await GetMessage(conversationId, message.Id);
+                    return originalMessage;
                 }
 
                 throw new StorageErrorException($"Failed to add message {message.Id} to conversation {conversationId}", e);
@@ -70,7 +72,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             {
                 if ((int)e.StatusCode == 404)
                 {
-                    throw new MessagesNotFoundException($"ConversationId {conversationId} was not found in storage");
+                    throw new ConversationNotFoundException($"ConversationId {conversationId} was not found in storage");
                 }
 
 
@@ -78,7 +80,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             }
         }
 
-        public async Task<Message> GetMessage(string conversationId, string messageId)
+        private async Task<PostMessageResponse> GetMessage(string conversationId, string messageId)
         {
             try
             {
@@ -98,8 +100,7 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             }
         }
 
-
-        private static DocumentDbMessageEntity ToEntity(string conversationId, Message message)
+        private static DocumentDbMessageEntity ToEntity(string conversationId, PostMessageResponse message)
         {
             return new DocumentDbMessageEntity
             {
@@ -121,9 +122,9 @@ namespace Aub.Eece503e.ChatService.Web.Store.DocumentDB
             };
         }
 
-        private static Message ToMessage(DocumentDbMessageEntity entity)
+        private static PostMessageResponse ToMessage(DocumentDbMessageEntity entity)
         {
-            return new Message
+            return new PostMessageResponse
             {
                 Id = entity.Id,
                 Text = entity.Text,
