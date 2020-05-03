@@ -12,6 +12,5 @@ namespace Aub.Eece503e.ChatService.Web.Services
         Task<GetMessagesResponse> GetMessageList(string conversationId, string continuationToken, int limit, long lastSeenMessageTime);
         Task<PostConversationResponse> PostConversation(PostConversationRequest postConversationRequest,string conversationId);
         Task<GetConversationsResponse> GetConversations(string username, string continuationToken, int limit, long lastSeenConversationTime);
-        //Task UpdateConversation(string conversationId, string[] participants, long newModifiedUnixTime);
     }
 }
