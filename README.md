@@ -8,7 +8,7 @@ The project's objective was to learn more about back-end development and CD/CI s
 
 ## Features
 
-Full API documentation can be found [here](https://github.com/hsandid/ChatService/tree/master)
+Full API documentation can be found [here](https://github.com/hsandid/ChatService/blob/master/APIs_Documentation.md)
 
 The following microservices are available :
 
