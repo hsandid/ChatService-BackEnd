@@ -8,23 +8,23 @@ The project's objective was to learn more about back-end development and CD/CI s
 
 ## Features
 
-Full API documentation can be found here :
+Full API documentation can be found [here]()
 
-Project offers three main controllers/services (?):
+Three microservices are available :
 
-- Profile Microservice
+- **Profile Microservice**
 
    - Uses Azure Table storage to store profile data
    - Model : Controller <=> Storage Layer
    - Logging available for each microservice event
    
-- Images Microservice
+- **Images Microservice**
 
    - Uses Azure Blob storage to store images
    - Model : Controller <=> Storage Layer
    - Logging available for each microservice event
    
-- Conversations Microservice
+- **Conversations Microservice**
 
    - Uses Azure DocumentDB to store conversations, and their related messages
    - DocumentDB allows support for pagination when fetching conversations or messages
@@ -37,8 +37,20 @@ Integration tests, Unit tests, and Deployment tests are available for each micro
 
 ## Requirements
 
-Azure components required for the project to run: 
-Azure Table ( You must rename the x and y components in the _appsettings.json_ file accordingly) 
-Azure Blob Storage ( You must rename the x and y components in the _appsettings.json_ file accordingly) 
-Azure Insights ( You must rename the x and y components in the _appsettings.json_ file accordingly) 
-Azure DocumentDB ( You must rename the x and y components in the _appsettings.json_ file accordingly)
+For the Storage/Logging components to work properly, you must configure the following environment variables/_appsettings.json_ entries :
+
+- **Azure Table Storage & Azure Blob Storage**
+
+    - *"AzureStorageSettings:ConnectionString"* should be set to the connection string associated with your Azure Table & Azure Blob Container Storage resources
+    - *"AzureStorageSettings:ProfilesTableName"* is by default _"Profiles"_, but you can modify the string value depending on the name of the Azure Table you have created.
+    - *"AzureStorageSettings:ImagesBlobContainerName"* is by default _"images"_, but you can modify the string value depending on the name of the Azure Blob container you have created.
+    
+- **Azure DocumentDB Storage**
+
+    - *DocumentDbSettings:PrimaryKey"* should be set to the connection string associated with your Azure DocumentDB resource
+    - *"DocumentDbSettings:DatabaseName"* should be set to the database name associated with your Azure DocumentDB resource
+     - *"DocumentDbSettings:CollectionName"* should be set to the collection name associated with your Azure DocumentDB resource
+    
+- **Logging & Azure Insights**
+
+    - *"ApplicationInsights:InstrumentationKey"* should be set to the instrumentation key associated with your Azure Application Insights resource
