@@ -20,7 +20,7 @@ Three microservices are available :
    
 - **Images Microservice**
 
-   - Uses Azure Blob storage to store images
+   - Uses Azure Blob storage to store profile images
    - Model : Controller <=> Storage Layer
    - Logging available for each microservice event
    
@@ -37,19 +37,20 @@ Integration tests, Unit tests, and Deployment tests are available for each micro
 
 ## Requirements
 
-For the Storage/Logging components to work properly, you must configure the following environment variables/_appsettings.json_ entries :
+For the Storage/Logging components to work properly, you must configure the following environment variables :
 
 - **Azure Table Storage & Azure Blob Storage**
 
     - *"AzureStorageSettings:ConnectionString"* should be set to the connection string associated with your Azure Table & Azure Blob Container Storage resources
-    - *"AzureStorageSettings:ProfilesTableName"* is by default _"Profiles"_, but you can modify the string value depending on the name of the Azure Table you have created.
-    - *"AzureStorageSettings:ImagesBlobContainerName"* is by default _"images"_, but you can modify the string value depending on the name of the Azure Blob container you have created.
+    - *"AzureStorageSettings:ProfilesTableName"* should be set to the name of the Azure Table you have created.
+    - *"AzureStorageSettings:ImagesBlobContainerName"* should be set to the name of the Azure Blob container you have created.
     
 - **Azure DocumentDB Storage**
 
     - *DocumentDbSettings:PrimaryKey"* should be set to the connection string associated with your Azure DocumentDB resource
     - *"DocumentDbSettings:DatabaseName"* should be set to the database name associated with your Azure DocumentDB resource
      - *"DocumentDbSettings:CollectionName"* should be set to the collection name associated with your Azure DocumentDB resource
+     - *"DocumentDbSettings:EndpointUrl"* should be set to the endpoint URL associated with your Azure DocumentDB resource
     
 - **Logging & Azure Insights**
 
