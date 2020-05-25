@@ -1,6 +1,6 @@
 # API Documentation
 
-_All request/response bodies are in JSON format_
+_All request/response bodies are in JSON format unless specified otherwise_
 
 ## Profiles Microservice
 
@@ -43,7 +43,7 @@ _All request/response bodies are in JSON format_
 
 - POST api/images
 
-   - Request Body :
+   - Request Body : form-data with key 'file' and value <Photo>
   
    - Response Body :
 
@@ -51,19 +51,19 @@ _All request/response bodies are in JSON format_
 
    - Request Body :
   
-   - Response Body :
+   - Response Body : form-data with value <Photo>
 
 - DELETE api/images/{imageId}
 
-   - Request Body :
+   - Request Body : `None` 
   
-   - Response Body :
+   - Response Body : {}
 
 ## Conversations Microservice
 
 - POST api/conversations
 
-   - Request Body :
+   - Request Body : 
   
    - Response Body :
 
