@@ -10,7 +10,7 @@ The project's objective was to learn more about back-end development and CD/CI s
 
 Full API documentation can be found [here]()
 
-Three microservices are available :
+The following microservices are available :
 
 - **Profile Microservice**
 
