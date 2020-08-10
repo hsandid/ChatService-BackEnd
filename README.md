@@ -54,11 +54,11 @@ For the Storage/Logging components to work properly, you must configure the foll
 
     - _"ApplicationInsights:InstrumentationKey"_ should be set to the instrumentation key associated with your Azure Application Insights resource
     
-# API Documentation
+## API Documentation
 
 _All request/response bodies are in JSON format unless specified otherwise_
 
-## Profiles Microservice
+### Profiles Microservice
 
 - POST api/profile
 
@@ -116,7 +116,7 @@ _All request/response bodies are in JSON format unless specified otherwise_
 "Username"
 }`
 
-## Images Microservice
+### Images Microservice
 
 - POST api/images
 
@@ -141,7 +141,7 @@ _All request/response bodies are in JSON format unless specified otherwise_
      "ImageId"
  }`
 
-## Conversations Microservice
+### Conversations Microservice
 
 - POST api/conversations
 
