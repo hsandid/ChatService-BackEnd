@@ -35,7 +35,7 @@ Integration tests, Unit tests, and Deployment tests are available for each micro
 
 ## Requirements
 
-For the Storage/Logging components to work properly, you must configure the following environment variables :
+The Storage/Logging components have been designed for use with the Azure Cloud Platform. For these component to work properly, you must configure the following environment variables :
 
 - **Azure Table Storage & Azure Blob Storage**
 
