@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Aub.Eece503e.ChatService.Datacontracts\Aub.Eece503e.ChatService.Datacontracts.csproj" />
-    <ProjectReference Include="..\Aub.Eece503e.ChatService.Web\Aub.Eece503e.ChatService.Web.csproj" />
+    <ProjectReference Include="..\ChatService.Datacontracts\ChatService.Datacontracts.csproj" />
+    <ProjectReference Include="..\ChatService.Web\ChatService.Web.csproj" />
   </ItemGroup>
 
 </Project>
