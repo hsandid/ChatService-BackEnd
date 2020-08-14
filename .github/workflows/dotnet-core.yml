@@ -18,6 +18,6 @@ jobs:
       with:
         dotnet-version: 3.0.x
     - name: Install dependencies
-      run: dotnet **/*.csproj restore
+      run: dotnet restore **/*.csproj
     - name: Build
       run: dotnet build **/*.csproj --configuration Release --no-restore
