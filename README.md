@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/hsandid/ChatService-BackEnd.svg?branch=master)](https://travis-ci.com/hsandid/ChatService-BackEnd)
 # Chat Service - Back-End API
 
 ## Description
