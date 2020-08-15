@@ -17,12 +17,17 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.0.x
-    - name: Install dependencies
+    - name: Install dependencies ClientProj
       run: dotnet restore ChatService.Client/ChatService.Client.csproj
-           dotnet restore ChatService.Datacontracts/ChatService.Datacontracts.csproj
-           dotnet restore ChatService.DeploymentTests/ChatService.DeploymentTests.csproj
-           dotnet restore ChatService.IntegrationTests/ChatService.IntegrationTests.csproj
-           dotnet restore ChatService.Web/ChatService.Web.csproj
-           dotnet restore ChatService.Tests/ChatService.Tests.csproj
+    - name: Install dependencies DataContracts
+      run: dotnet restore ChatService.Datacontracts/ChatService.Datacontracts.csproj
+    - name: Install dependencies DeploymentTests
+      run: dotnet restore ChatService.DeploymentTests/ChatService.DeploymentTests.csproj
+    - name: Install dependencies IntegrationsTests
+      run: dotnet restore ChatService.IntegrationTests/ChatService.IntegrationTests.csproj
+    - name: Install dependencies WebProj
+      run: dotnet restore ChatService.Web/ChatService.Web.csproj
+    - name: Install dependencies Tests
+      run: dotnet restore ChatService.Tests/ChatService.Tests.csproj           
     - name: Build
       run: dotnet build **/*.csproj --configuration Release --no-restore
