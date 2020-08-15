@@ -28,6 +28,16 @@ jobs:
     - name: Install dependencies WebProj
       run: dotnet restore ChatService.Web/ChatService.Web.csproj
     - name: Install dependencies Tests
-      run: dotnet restore ChatService.Tests/ChatService.Tests.csproj           
-    - name: Build
-      run: dotnet build **/*.csproj --configuration Release --no-restore
+      run: dotnet restore ChatService.Tests/ChatService.Tests.csproj         
+    - name: Build ClientProj
+      run: dotnet build ChatService.Client/ChatService.Client.csproj --configuration Release --no-restore
+    - name: Build DataContracts
+      run: dotnet build ChatService.Datacontracts/ChatService.Datacontracts.csproj --configuration Release --no-restore
+    - name: Build DeploymentTests
+      run: dotnet build ChatService.DeploymentTests/ChatService.DeploymentTests.csproj --configuration Release --no-restore
+    - name: Build IntegrationsTests
+      run: dotnet build ChatService.IntegrationTests/ChatService.IntegrationTests.csproj --configuration Release --no-restore
+    - name: Build WebProj
+      run: dotnet build ChatService.Web/ChatService.Web.csproj --configuration Release --no-restore
+    - name: Build Tests
+      run: dotnet build ChatService.Tests/ChatService.Tests.csproj --configuration Release --no-restore      
