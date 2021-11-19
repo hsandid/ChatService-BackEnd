@@ -5,7 +5,7 @@
 
 Completed during the Spring 2019-2020 semester by Bassel Shurbaji and Hadi Sandid for the course _EECE503e - Web Services in the Cloud_ .
 
-The project's objective was to learn more about back-end development and CD/CI systems, using the ASP.NET Core framework and the Azure DevOps platform.
+The project's objective was to learn more about back-end development and CI/CD systems, using the ASP.NET Core framework and the Azure DevOps platform.
 
 ## Features
 
